@@ -53,7 +53,6 @@ const createNonFungibleSignature = await createNft(umi, {
   name: "Mi no fungible",
   uri: nonFungibleUri,
   sellerFeeBasisPoints: percentAmount(0),
-  updateAuthority: umi.identity,
   tokenOwner: publicKey("8r8dZAgfEicf6KXoSC5xV64S4Wm2RWpq8kfaxKxKJThP"),
 }).sendAndConfirm(umi);
 console.log(
@@ -67,7 +66,7 @@ Note: The `createNft` method makes all the calls we manually did in the previous
 
 ## Step #2: Create a fungible
 
-A fungible token is a token in which you can't differentiate one from the another one. 2 USDCs are identical to each other, while each NFT (non-fungible) is distinct from each other. 
+A fungible token is a token in which you can't differentiate one from the another one. 2 USDCs are identical to each other, while each NFT (non-fungible) is distinct from each other.
 
 ```ts
 // Upload fungible image to Irys
@@ -101,7 +100,6 @@ const createFungibleSignature = await createFungible(umi, {
   name: "Mi fungible",
   uri: fungibleUri,
   sellerFeeBasisPoints: percentAmount(0),
-  updateAuthority: umi.identity,
   decimals: some(6),
 }).sendAndConfirm(umi);
 console.log(
@@ -181,7 +179,6 @@ const createFungibleAssetSignature = await createFungibleAsset(umi, {
   name: "Mi asset fungible",
   uri: fungibleAssetUri,
   sellerFeeBasisPoints: percentAmount(0),
-  updateAuthority: umi.identity,
   decimals: some(6),
 }).sendAndConfirm(umi);
 console.log(
@@ -266,7 +263,6 @@ const createProgrammableNonFungibleSignature = await createProgrammableNft(
     name: "Mi no fungible programable",
     uri: programmableNonFungibleUri,
     sellerFeeBasisPoints: percentAmount(0),
-    updateAuthority: umi.identity,
     tokenOwner: publicKey("8r8dZAgfEicf6KXoSC5xV64S4Wm2RWpq8kfaxKxKJThP"),
   }
 ).sendAndConfirm(umi);
@@ -279,6 +275,6 @@ console.log(
 
 ## Bonus: Why programmable NFts?
 
-By having additional rules associated to an NFT we are essentially given super powers to an NFT. The top use-case for them is for royalty enforcement, which is something that cannot be done in the traditional world but thanks to decentralized programs this can be done. 
+By having additional rules associated to an NFT we are essentially given super powers to an NFT. The top use-case for them is for royalty enforcement, which is something that cannot be done in the traditional world but thanks to decentralized programs this can be done.
 
 Artists can sell their art and get life-time royalties from resellers, this makes it more attractive for artists than traditional alternatives.

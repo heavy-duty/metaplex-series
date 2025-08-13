@@ -79,7 +79,6 @@ async function main() {
     uri,
     sellerFeeBasisPoints: percentAmount(0),
     tokenStandard: TokenStandard.NonFungible,
-    updateAuthority: umi.identity,
   }).sendAndConfirm(umi);
   console.log(
     `Create signature: ${base58.deserialize(createSignature.signature)[0]}`
@@ -103,7 +102,6 @@ async function main() {
   // Mint the NFT to a wallet
   const mintSignature = await mintV1(umi, {
     mint: mintSigner.publicKey,
-    authority: umi.identity,
     amount: 1,
     tokenOwner: publicKey("8r8dZAgfEicf6KXoSC5xV64S4Wm2RWpq8kfaxKxKJThP"),
     tokenStandard: TokenStandard.NonFungible,

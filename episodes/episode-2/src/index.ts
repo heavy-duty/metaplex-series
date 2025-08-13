@@ -90,7 +90,6 @@ async function main() {
     name: "Mi no fungible",
     uri: nonFungibleUri,
     sellerFeeBasisPoints: percentAmount(0),
-    updateAuthority: umi.identity,
     tokenOwner: publicKey("8r8dZAgfEicf6KXoSC5xV64S4Wm2RWpq8kfaxKxKJThP"),
   }).sendAndConfirm(umi);
   console.log(
@@ -130,7 +129,6 @@ async function main() {
     name: "Mi fungible",
     uri: fungibleUri,
     sellerFeeBasisPoints: percentAmount(0),
-    updateAuthority: umi.identity,
     decimals: some(6),
   }).sendAndConfirm(umi);
   console.log(
@@ -157,7 +155,6 @@ async function main() {
   // Mint the NFT to a wallet
   const mintFungibleSignature = await mintV1(umi, {
     mint: fungibleMintSigner.publicKey,
-    authority: umi.identity,
     amount: 1,
     tokenOwner: publicKey("8r8dZAgfEicf6KXoSC5xV64S4Wm2RWpq8kfaxKxKJThP"),
     tokenStandard: TokenStandard.NonFungible,
@@ -202,7 +199,6 @@ async function main() {
     name: "Mi asset fungible",
     uri: fungibleAssetUri,
     sellerFeeBasisPoints: percentAmount(0),
-    updateAuthority: umi.identity,
     decimals: some(6),
   }).sendAndConfirm(umi);
   console.log(
@@ -229,7 +225,6 @@ async function main() {
   // Mint the fungible asset to a wallet
   const mintFungibleAssetSignature = await mintV1(umi, {
     mint: fungibleAssetMintSigner.publicKey,
-    authority: umi.identity,
     amount: 1,
     tokenOwner: publicKey("8r8dZAgfEicf6KXoSC5xV64S4Wm2RWpq8kfaxKxKJThP"),
     tokenStandard: TokenStandard.FungibleAsset,
@@ -277,7 +272,6 @@ async function main() {
       name: "Mi no fungible programable",
       uri: programmableNonFungibleUri,
       sellerFeeBasisPoints: percentAmount(0),
-      updateAuthority: umi.identity,
       tokenOwner: publicKey("8r8dZAgfEicf6KXoSC5xV64S4Wm2RWpq8kfaxKxKJThP"),
     }
   ).sendAndConfirm(umi);

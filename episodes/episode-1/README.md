@@ -96,7 +96,6 @@ const createSignature = await createV1(umi, {
   uri,
   sellerFeeBasisPoints: percentAmount(0),
   tokenStandard: TokenStandard.NonFungible,
-  updateAuthority: umi.identity,
 }).sendAndConfirm(umi);
 console.log(
   `Create signature: ${base58.deserialize(createSignature.signature)[0]}`
@@ -123,7 +122,6 @@ console.log(
 // Mint the token to the receiver
 const mintSignature = await mintV1(umi, {
   mint: mintSigner.publicKey,
-  authority: umi.identity,
   amount: 1,
   tokenOwner: publicKey("8r8dZAgfEicf6KXoSC5xV64S4Wm2RWpq8kfaxKxKJThP"),
   tokenStandard: TokenStandard.NonFungible,
