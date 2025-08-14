@@ -12,7 +12,7 @@ In this episode we'll focus on creating and configuring a Candy Machine and then
 
 ## Initialize your workspace
 
-Before we start, there's some things that need configuration, luckily for us it's pretty much the same from the previous episodes. You need to copy the code from step #1.
+Before we start, there's some things that need configuration, luckily for us it's pretty much the same from the previous episodes. You need to copy the code from step #1 of the first episode.
 
 ## Step #1: Create a Collection NFT
 
