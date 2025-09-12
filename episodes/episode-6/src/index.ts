@@ -12,6 +12,7 @@ import {
   statusCommand,
   withdrawCommand,
 } from "./commands";
+import { createCommand } from "./utils";
 
 // Initialize commander
 const program = new Command();
@@ -62,7 +63,7 @@ program
     "Lamports per NFT",
     process.env.BASE_UNIT || "100000000"
   )
-  .action(createCampaignCommand);
+  .action(createCommand(createCampaignCommand));
 
 // Command: donate
 program
@@ -71,7 +72,7 @@ program
   .requiredOption("--campaignMint <pubkey>", "Campaign mint public key")
   .requiredOption("--backerWallet <pubkey>", "Backer's wallet public key")
   .requiredOption("--amount <lamports>", "Donation amount in lamports")
-  .action(donateCommand);
+  .action(createCommand(donateCommand));
 
 // Command: refund
 program
@@ -79,7 +80,7 @@ program
   .description("Burns backer's Pledge NFTs, refunds total pledged amount")
   .requiredOption("--campaignMint <pubkey>", "Campaign mint public key")
   .requiredOption("--backerWallet <pubkey>", "Backer's wallet public key")
-  .action(refundCommand);
+  .action(createCommand(refundCommand));
 
 // Command: withdraw
 program
@@ -87,20 +88,20 @@ program
   .description("Batch-claims eligible payment orders post-projectStartDate")
   .requiredOption("--campaignMint <pubkey>", "Campaign mint public key")
   .option("--partial", "Allow partial claims", false)
-  .action(withdrawCommand);
+  .action(createCommand(withdrawCommand));
 
 // Command: status
 program
   .command("status")
   .description("Queries campaign status")
   .requiredOption("--campaignMint <pubkey>", "Campaign mint public key")
-  .action(statusCommand);
+  .action(createCommand(statusCommand));
 
 // Command: list-campaigns
 program
   .command("list-campaigns")
   .description("Lists all campaigns")
-  .action(listCampaignsCommand);
+  .action(createCommand(listCampaignsCommand));
 
 // Parse command-line arguments
 program.parse(process.argv);

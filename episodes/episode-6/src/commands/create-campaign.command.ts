@@ -4,7 +4,6 @@ import {
 } from "@metaplex-foundation/mpl-core";
 import { createGenericFile, generateSigner } from "@metaplex-foundation/umi";
 import { base58 } from "@metaplex-foundation/umi/serializers";
-import { Command } from "commander";
 import { getUnixTime, parseISO } from "date-fns";
 import { readFile } from "fs/promises";
 import path from "path";
@@ -20,21 +19,16 @@ export interface CreateCampaignCommandOptions {
   basePrice: string;
   bondingSlope: string;
   baseUnit: string;
+  rpcUrl: string;
+  serverKeypair: string;
+  logLevel: string;
 }
 
 export async function createCampaignCommand(
-  options: CreateCampaignCommandOptions,
-  command: Command
+  options: CreateCampaignCommandOptions
 ) {
-  // Get global options
-  const globalOptions = command.parent!.opts<{
-    rpcUrl: string;
-    serverKeypair: string;
-    logLevel: string;
-  }>();
-
   // Initialize UMI
-  const umi = await getUmi(globalOptions.serverKeypair);
+  const umi = await getUmi(options.serverKeypair);
 
   // Upload campaign image
   const campaignImagePath = path.join(
