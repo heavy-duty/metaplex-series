@@ -7,7 +7,6 @@ import { Command } from "commander";
 import {
   createCampaignCommand,
   donateCommand,
-  listCampaignsCommand,
   refundCommand,
   statusCommand,
   withdrawCommand,
@@ -96,12 +95,6 @@ program
   .description("Queries campaign status")
   .requiredOption("--campaignMint <pubkey>", "Campaign mint public key")
   .action(createCommand(statusCommand));
-
-// Command: list-campaigns
-program
-  .command("list-campaigns")
-  .description("Lists all campaigns")
-  .action(createCommand(listCampaignsCommand));
 
 // Parse command-line arguments
 program.parse(process.argv);
