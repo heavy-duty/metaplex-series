@@ -1,5 +1,9 @@
-import { Command } from "commander";
 import * as dotenv from "dotenv";
+
+// Load environment variables
+dotenv.config();
+
+import { Command } from "commander";
 import {
   createCampaignCommand,
   donateCommand,
@@ -8,9 +12,6 @@ import {
   statusCommand,
   withdrawCommand,
 } from "./commands";
-
-// Load environment variables
-dotenv.config();
 
 // Initialize commander
 const program = new Command();
