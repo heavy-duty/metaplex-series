@@ -64,6 +64,16 @@ program
   )
   .action(createCommand(createCampaignCommand));
 
+// Command: status
+program
+  .command("status")
+  .description("Queries campaign status")
+  .requiredOption(
+    "--campaignAssetAddress <pubkey>",
+    "Campaign asset public key"
+  )
+  .action(createCommand(statusCommand));
+
 // Command: donate
 program
   .command("donate")
@@ -88,13 +98,6 @@ program
   .requiredOption("--campaignMint <pubkey>", "Campaign mint public key")
   .option("--partial", "Allow partial claims", false)
   .action(createCommand(withdrawCommand));
-
-// Command: status
-program
-  .command("status")
-  .description("Queries campaign status")
-  .requiredOption("--campaignMint <pubkey>", "Campaign mint public key")
-  .action(createCommand(statusCommand));
 
 // Parse command-line arguments
 program.parse(process.argv);
