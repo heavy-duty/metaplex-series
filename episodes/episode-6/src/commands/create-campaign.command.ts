@@ -1,7 +1,4 @@
-import {
-  create as createCoreNft,
-  fetchAsset,
-} from "@metaplex-foundation/mpl-core";
+import { create as createCoreNft } from "@metaplex-foundation/mpl-core";
 import { createGenericFile, generateSigner } from "@metaplex-foundation/umi";
 import { base58 } from "@metaplex-foundation/umi/serializers";
 import { getUnixTime, parseISO } from "date-fns";
@@ -97,22 +94,8 @@ export async function createCampaignCommand(
     ],
   }).sendAndConfirm(umi);
   console.log(
-    `Create Campaign NFT signature: ${
+    `Create Campaign NFT (address: ${assetSigner.publicKey}) signature: ${
       base58.deserialize(createCampaignSignature.signature)[0]
     }`
-  );
-
-  // Fetch the NFT
-  const asset = await fetchAsset(umi, assetSigner.publicKey, {
-    skipDerivePlugins: false,
-  });
-
-  // Print everything we created
-  console.log("\nResults:");
-  console.log(`Asset Address: ${assetSigner.publicKey}`);
-  console.log(`Asset Name: ${asset.name}`);
-  console.log(`Asset Attributes:`);
-  asset.attributes?.attributeList.forEach((attribute) =>
-    console.log(`  ${attribute.key}: ${attribute.value}`)
   );
 }
