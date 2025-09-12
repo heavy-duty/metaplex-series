@@ -85,10 +85,14 @@ export async function createCampaignCommand(
     plugins: [
       {
         type: "Attributes",
-        attributeList: paymentOrders.map((paymentOrder, index) => ({
-          key: `Payment Order #${index + 1}`,
-          value: paymentOrder.status,
-        })),
+        attributeList: [
+          { key: "Total pledges", value: "0" },
+          { key: "Refunded pledges", value: "0" },
+          ...paymentOrders.map((paymentOrder, index) => ({
+            key: `Payment Order #${index + 1}`,
+            value: paymentOrder.status,
+          })),
+        ],
       },
     ],
   }).sendAndConfirm(umi);
