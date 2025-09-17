@@ -1,6 +1,6 @@
 export interface RefundCommandOptions {
-  campaignMint: string;
-  backerWallet: string;
+  campaignAssetAddress: string;
+  backerKeypair: string;
   rpcUrl: string;
   serverKeypair: string;
   logLevel: string;

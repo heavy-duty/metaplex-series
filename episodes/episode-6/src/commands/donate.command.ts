@@ -1,6 +1,6 @@
 export interface DonateCommandOptions {
-  campaignMint: string;
-  backerWallet: string;
+  campaignAssetAddress: string;
+  backerKeypair: string;
   amount: string;
   rpcUrl: string;
   serverKeypair: string;

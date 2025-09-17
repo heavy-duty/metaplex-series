@@ -83,7 +83,7 @@ program
   .description("Queries campaign status")
   .requiredOption(
     "--campaignAssetAddress <pubkey>",
-    "Campaign asset public key"
+    "Address of the Campaign NFT"
   )
   .action(createCommand(statusCommand));
 
@@ -91,8 +91,11 @@ program
 program
   .command("donate")
   .description("Mints Pledge NFTs, transfers SOL to Campaign NFT's account")
-  .requiredOption("--campaignMint <pubkey>", "Campaign mint public key")
-  .requiredOption("--backerWallet <pubkey>", "Backer's wallet public key")
+  .requiredOption(
+    "--campaignAssetAddress <string>",
+    "Address of the Campaign NFT"
+  )
+  .requiredOption("--backerKeypair <path>", "Backer's keypair path")
   .requiredOption("--amount <lamports>", "Donation amount in lamports")
   .action(createCommand(donateCommand));
 
@@ -100,16 +103,22 @@ program
 program
   .command("refund")
   .description("Burns backer's Pledge NFTs, refunds total pledged amount")
-  .requiredOption("--campaignMint <pubkey>", "Campaign mint public key")
-  .requiredOption("--backerWallet <pubkey>", "Backer's wallet public key")
+  .requiredOption(
+    "--campaignAssetAddress <string>",
+    "Address of the Campaign NFT"
+  )
+  .requiredOption("--backerKeypair <path>", "Backer's keypair path")
   .action(createCommand(refundCommand));
 
 // Command: withdraw
 program
   .command("withdraw")
   .description("Batch-claims eligible payment orders post-projectStartDate")
-  .requiredOption("--campaignMint <pubkey>", "Campaign mint public key")
-  .option("--partial", "Allow partial claims", false)
+  .requiredOption(
+    "--campaignAssetAddress <string>",
+    "Address of the Campaign NFT"
+  )
+  .requiredOption("--creatorKeypair <path>", "Creator's keypair path")
   .action(createCommand(withdrawCommand));
 
 // Parse command-line arguments
