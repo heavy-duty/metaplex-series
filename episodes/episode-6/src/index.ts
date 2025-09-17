@@ -41,6 +41,7 @@ program
   .requiredOption("--goal <lamports>", "Funding goal in lamports")
   .requiredOption("--durationMonths <num>", "Duration in months")
   .requiredOption("--name <string>", "Campaign name")
+  .requiredOption("--symbol <string>", "Campaign symbol")
   .requiredOption("--description <string>", "Campaign description")
   .requiredOption("--creatorWallet <pubkey>", "Creator's wallet public key")
   .requiredOption(

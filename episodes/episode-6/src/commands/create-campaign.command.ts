@@ -11,6 +11,7 @@ export interface CreateCampaignCommandOptions {
   durationMonths: string;
   name: string;
   description: string;
+  symbol: string;
   creatorWallet: string;
   projectStartDate: string;
   basePrice: string;
@@ -46,7 +47,7 @@ export async function createCampaignCommand(
   // Upload campaign metadata
   const campaignUri = await umi.uploader.uploadJson({
     name: options.name,
-    symbol: "CAMP",
+    symbol: options.symbol,
     description: options.description,
     image: campaignImage,
     attributes: [
@@ -55,6 +56,7 @@ export async function createCampaignCommand(
       { trait_type: "creatorWallet", value: options.creatorWallet },
       { trait_type: "basePrice", value: options.basePrice },
       { trait_type: "baseUnit", value: options.baseUnit },
+      { trait_type: "bondingSlope", value: options.bondingSlope },
       {
         trait_type: "projectStartDate",
         value: getUnixTime(parseISO(options.projectStartDate)).toString(),
@@ -83,10 +85,11 @@ export async function createCampaignCommand(
       {
         type: "Attributes",
         attributeList: [
-          { key: "Total pledges", value: "0" },
-          { key: "Refunded pledges", value: "0" },
+          { key: "status", value: "draft" },
+          { key: "totalPledges", value: "0" },
+          { key: "refundedPledges", value: "0" },
           ...paymentOrders.map((paymentOrder, index) => ({
-            key: `Payment Order #${index + 1}`,
+            key: `paymentOrder_${index + 1}`,
             value: paymentOrder.status,
           })),
         ],
