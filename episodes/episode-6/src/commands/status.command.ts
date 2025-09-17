@@ -1,6 +1,4 @@
-import { fetchAsset } from "@metaplex-foundation/mpl-core";
-import { publicKey } from "@metaplex-foundation/umi";
-import { getUmi } from "../utils";
+import { fetchAssetWithMetadata, toCampaign } from "../utils";
 
 export interface StatusCommandOptions {
   campaignAssetAddress: string;
@@ -10,35 +8,15 @@ export interface StatusCommandOptions {
 }
 
 export async function statusCommand(options: StatusCommandOptions) {
-  // Initialize UMI
-  const umi = await getUmi(options.serverKeypair);
-
-  // Fetch the NFT
-  const asset = await fetchAsset(umi, publicKey(options.campaignAssetAddress), {
-    skipDerivePlugins: false,
+  // Fetch the asset with metadata
+  const campaignAssetWithMetadata = await fetchAssetWithMetadata({
+    campaignAssetAddress: options.campaignAssetAddress,
+    serverKeypair: options.serverKeypair,
   });
 
-  // Fetch the metadata
-  const response = await fetch(asset.uri, { method: "GET" });
+  // Transform asset with metadata into campaign
+  const campaign = toCampaign(campaignAssetWithMetadata);
 
-  if (!response.ok) {
-    throw new Error("Metadata not found");
-  }
-
-  const metadata = await response.json();
-
-  // Print everything we created
-  console.log("\nResults:");
-  console.log(`Asset Address: ${options.campaignAssetAddress}`);
-  console.log(`Asset Name: ${asset.name} ($${metadata.symbol})`);
-  console.log(`Asset Description: ${metadata.description}`);
-  console.log(`Asset Attributes: (on-chain)`);
-  asset.attributes?.attributeList.forEach((attribute) =>
-    console.log(`  ${attribute.key}: ${attribute.value}`)
-  );
-  console.log(`Asset Attributes: (off-chain)`);
-  metadata.attributes.forEach(
-    (attribute: { trait_type: string; value: string }) =>
-      console.log(`  ${attribute.trait_type}: ${attribute.value}`)
-  );
+  // Pretty print the campaign and all its details
+  console.log(JSON.stringify(campaign, null, "  "));
 }
