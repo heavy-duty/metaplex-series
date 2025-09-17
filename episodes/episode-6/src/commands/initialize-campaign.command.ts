@@ -162,6 +162,10 @@ export async function initializeCampaignCommand(
           key: "pledgesCandyMachineAddress",
           value: candyMachineSigner.publicKey,
         },
+        {
+          key: "pledgesCollectionAddress",
+          value: collectionMintSigner.publicKey,
+        },
         { key: "totalPledges", value: "0" },
         { key: "refundedPledges", value: "0" },
         ...campaign.paymentOrders.map((paymentOrder) => ({
