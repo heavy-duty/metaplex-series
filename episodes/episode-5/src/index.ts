@@ -99,8 +99,6 @@ async function main() {
   );
 
   // Step #2: Create a Core Candy Machine on-chain
-  umi.use(mplCandyMachine());
-
   const candyMachineSigner = generateSigner(umi);
   const candyMachineConfigLineSettings = some({
     prefixName: "Co-op Share #$ID+1$",
