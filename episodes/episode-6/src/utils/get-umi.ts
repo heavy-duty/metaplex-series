@@ -1,4 +1,5 @@
 import { mplCore } from "@metaplex-foundation/mpl-core";
+import { mplCandyMachine } from "@metaplex-foundation/mpl-core-candy-machine";
 import { mplToolbox } from "@metaplex-foundation/mpl-toolbox";
 import { keypairIdentity } from "@metaplex-foundation/umi";
 import { createUmi } from "@metaplex-foundation/umi-bundle-defaults";
@@ -23,11 +24,14 @@ export async function getUmi(serverKeypair: string) {
   // Register keypair as identity and payer
   umi = umi.use(keypairIdentity(keypair));
 
-  // Register token metadata program
+  // Register core nft program
   umi = umi.use(mplCore());
 
   // Register the Metaplex toolbox
   umi = umi.use(mplToolbox());
+
+  // Register the candy machine program
+  umi = umi.use(mplCandyMachine());
 
   // Register Irys as the uploader
   umi = umi.use(

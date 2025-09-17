@@ -19,6 +19,7 @@ export interface Campaign {
   totalPledges: number;
   refundedPledges: number;
   paymentOrders: { orderNumber: number; status: PaymentOrderStatus }[];
+  pledgesCandyMachineAddress: string | null;
 }
 
 export function toCampaign(assetWithMetadata: AssetWithMetadata): Campaign {
@@ -125,6 +126,11 @@ export function toCampaign(assetWithMetadata: AssetWithMetadata): Campaign {
     throw new Error("Campaign is missing payment orders");
   }
 
+  const campaignPledgesCandyMachineAddress =
+    assetWithMetadata.attributes?.attributeList.find(
+      (attribute) => attribute.key === "pledgesCandyMachineAddress"
+    )?.value || null;
+
   return {
     name: assetWithMetadata.name,
     description: assetWithMetadata.metadata.description,
@@ -147,5 +153,6 @@ export function toCampaign(assetWithMetadata: AssetWithMetadata): Campaign {
         status: attribute.value as PaymentOrderStatus,
       };
     }),
+    pledgesCandyMachineAddress: campaignPledgesCandyMachineAddress,
   };
 }

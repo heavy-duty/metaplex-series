@@ -7,6 +7,7 @@ import { Command } from "commander";
 import {
   createCampaignCommand,
   donateCommand,
+  initializeCampaignCommand,
   refundCommand,
   statusCommand,
   withdrawCommand,
@@ -35,9 +36,7 @@ program
 // Command: create-campaign
 program
   .command("create-campaign")
-  .description(
-    "Mints Campaign NFT, sets up Candy Machine, initializes payment orders"
-  )
+  .description("Mints Campaign NFT")
   .requiredOption("--goal <lamports>", "Funding goal in lamports")
   .requiredOption("--durationMonths <num>", "Duration in months")
   .requiredOption("--name <string>", "Campaign name")
@@ -61,9 +60,22 @@ program
   .option(
     "--baseUnit <lamports>",
     "Lamports per NFT",
-    process.env.BASE_UNIT || "100000000"
+    process.env.BASE_UNIT || "1000000000"
   )
   .action(createCommand(createCampaignCommand));
+
+// Command: initialize-campaign
+program
+  .command("initialize-campaign")
+  .description("Sets up pledges Candy Machine and updates Campaign NFT status")
+  .requiredOption("--name <string>", "Campaign name")
+  .requiredOption("--symbol <string>", "Campaign symbol")
+  .requiredOption("--description <string>", "Campaign description")
+  .requiredOption(
+    "--campaignAssetAddress <string>",
+    "Address of the Campaign NFT"
+  )
+  .action(createCommand(initializeCampaignCommand));
 
 // Command: status
 program
