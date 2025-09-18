@@ -44,7 +44,10 @@ export async function withdrawCampaignCommand(
   // Transform asset with metadata into campaign
   const campaign = toCampaign(campaignAssetWithMetadata);
 
-  // TODO: assert the creator matches the campaign's creator
+  // Assert the creator matches the campaign's creator
+  if (campaign.creatorWallet !== creatorKeypair.publicKey) {
+    throw new Error("You are not authorized to withdraw from this campaign");
+  }
 
   // Get the campaign payment orders
   const paymentOrders = calculatePaymentOrders(
