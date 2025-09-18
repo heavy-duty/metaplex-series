@@ -57,13 +57,6 @@ export async function pledgeCampaignCommand(
   const currentPledgePrice =
     campaign.basePrice + netPledgeSupply * campaign.bondingSlope;
 
-  console.log({
-    backerKeypair: backerKeypair.publicKey,
-    netPledgeSupply,
-    currentPledgePrice,
-    currentPledgePriceInSol: lamports(currentPledgePrice),
-  });
-
   const transferSolSignature = await transferSol(umi, {
     amount: lamports(currentPledgePrice),
     destination: findAssetSignerPda(umi, {
