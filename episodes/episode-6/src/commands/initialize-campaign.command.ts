@@ -86,6 +86,8 @@ export async function initializeCampaignCommand(
         },
         { key: "totalPledges", value: "0" },
         { key: "refundedPledges", value: "0" },
+        { key: "totalDeposited", value: "0" },
+        { key: "currentlyDeposited", value: "0" },
         ...campaign.paymentOrders.map((paymentOrder) => ({
           key: `paymentOrder_${paymentOrder.orderNumber}`,
           value: paymentOrder.status,

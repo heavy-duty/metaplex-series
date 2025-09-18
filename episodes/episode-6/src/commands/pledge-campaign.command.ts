@@ -126,6 +126,14 @@ export async function pledgeCampaignCommand(
         },
         { key: "totalPledges", value: (campaign.totalPledges + 1).toString() },
         { key: "refundedPledges", value: campaign.refundedPledges.toString() },
+        {
+          key: "totalDeposited",
+          value: (campaign.totalDeposited + currentPledgePrice).toString(),
+        },
+        {
+          key: "currentlyDeposited",
+          value: (campaign.currentlyDeposited + currentPledgePrice).toString(),
+        },
         ...campaign.paymentOrders.map((paymentOrder) => ({
           key: `paymentOrder_${paymentOrder.orderNumber}`,
           value: paymentOrder.status,

@@ -11,7 +11,7 @@ export interface Campaign {
   symbol: string;
   durationMonths: number;
   creatorWallet: string;
-  projectStartDate: number;
+  projectStartDate: Date;
   goal: number;
   baseUnit: number;
   basePrice: number;
@@ -19,6 +19,8 @@ export interface Campaign {
   status: CampaignStatus;
   totalPledges: number;
   refundedPledges: number;
+  totalDeposited: number;
+  currentlyDeposited: number;
   paymentOrders: { orderNumber: number; status: PaymentOrderStatus }[];
   pledgesCollectionAddress: string | null;
 }
@@ -105,6 +107,24 @@ export function toCampaign(assetWithMetadata: AssetWithMetadata): Campaign {
     throw new Error("Campaign is missing refundedPledges");
   }
 
+  const campaignTotalDeposited =
+    assetWithMetadata.attributes?.attributeList.find(
+      (attribute) => attribute.key === "totalDeposited"
+    )?.value || null;
+
+  if (campaignTotalDeposited === null) {
+    throw new Error("Campaign is missing totalDeposited");
+  }
+
+  const campaignCurrentlyDeposited =
+    assetWithMetadata.attributes?.attributeList.find(
+      (attribute) => attribute.key === "currentlyDeposited"
+    )?.value || null;
+
+  if (campaignCurrentlyDeposited === null) {
+    throw new Error("Campaign is missing currently deposited");
+  }
+
   const campaignStatus =
     assetWithMetadata.attributes?.attributeList.find(
       (attribute) => attribute.key === "status"
@@ -143,13 +163,14 @@ export function toCampaign(assetWithMetadata: AssetWithMetadata): Campaign {
     bondingSlope: parseInt(campaignBondingSlope, 10),
     durationMonths: parseInt(campaignDurationMonths, 10),
     creatorWallet: campaignCreatorWallet,
-    projectStartDate: parseInt(campaignProjectStartDate, 10),
+    projectStartDate: new Date(parseInt(campaignProjectStartDate, 10) * 1000),
     totalPledges: parseInt(campaignTotalPledges, 10),
     refundedPledges: parseInt(campaignRefundedPledges, 10),
+    totalDeposited: parseInt(campaignTotalDeposited, 10),
+    currentlyDeposited: parseInt(campaignCurrentlyDeposited, 10),
     status: campaignStatus,
     paymentOrders: campaignPaymentOrders.map((attribute) => {
       const orderNumber = attribute.key.split("_")[1];
-
       return {
         orderNumber: parseInt(orderNumber, 10),
         status: attribute.value as PaymentOrderStatus,

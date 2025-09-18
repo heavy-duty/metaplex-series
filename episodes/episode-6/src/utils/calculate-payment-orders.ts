@@ -3,18 +3,17 @@ import { addMonths, getDate, getDaysInMonth, getUnixTime } from "date-fns";
 export function calculatePaymentOrders(
   durationMonths: number,
   total: number,
-  startDate: Date
+  startDate: Date,
+  paymentOrders: { orderNumber: number; status: "unclaimed" | "claimed" }[] = []
 ) {
   const monthlyAmount = Math.floor(total / durationMonths);
-
-  // Extract day of month
   const targetDay = getDate(startDate);
 
-  const paymentOrders: {
+  const result: {
     monthIndex: number;
     dueTimestamp: number;
     amount: number;
-    status: "unclaimed" | "claimed" | "skipped";
+    status: "unclaimed" | "claimed";
   }[] = [];
 
   for (let i = 0; i < durationMonths; i++) {
@@ -27,13 +26,19 @@ export function calculatePaymentOrders(
     // Convert to Unix timestamp
     const dueTimestamp = getUnixTime(adjustedDueDate);
 
-    paymentOrders.push({
+    // Find matching payment order status or default to "unclaimed"
+    const existingOrder = paymentOrders.find(
+      (order) => order.orderNumber === i
+    );
+    const status = existingOrder ? existingOrder.status : "unclaimed";
+
+    result.push({
       monthIndex: i,
       dueTimestamp,
       amount: monthlyAmount,
-      status: "unclaimed",
+      status,
     });
   }
 
-  return paymentOrders;
+  return result;
 }

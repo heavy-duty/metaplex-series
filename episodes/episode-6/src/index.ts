@@ -11,7 +11,7 @@ import {
   initializeCampaignCommand,
   pledgeCampaignCommand,
   refundCampaignCommand,
-  withdrawCommand,
+  withdrawCampaignCommand,
 } from "./commands";
 import { createCommand } from "./utils";
 
@@ -124,16 +124,16 @@ program
   .requiredOption("--backerKeypair <path>", "Backer's keypair path")
   .action(createCommand(campaignPledgesCommand));
 
-// Command: withdraw
+// Command: withdraw-campaign
 program
-  .command("withdraw")
+  .command("withdraw-campaign")
   .description("Batch-claims eligible payment orders post-projectStartDate")
   .requiredOption(
     "--campaignAssetAddress <string>",
     "Address of the Campaign NFT"
   )
   .requiredOption("--creatorKeypair <path>", "Creator's keypair path")
-  .action(createCommand(withdrawCommand));
+  .action(createCommand(withdrawCampaignCommand));
 
 // Parse command-line arguments
 program.parse(process.argv);

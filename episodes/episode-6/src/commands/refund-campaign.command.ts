@@ -123,6 +123,14 @@ export async function refundCampaignCommand(
           key: "refundedPledges",
           value: (campaign.refundedPledges + 1).toString(),
         },
+        {
+          key: "totalDeposited",
+          value: campaign.totalDeposited.toString(),
+        },
+        {
+          key: "currentlyDeposited",
+          value: (campaign.currentlyDeposited - refundAmount).toString(),
+        },
         ...campaign.paymentOrders.map((paymentOrder) => ({
           key: `paymentOrder_${paymentOrder.orderNumber}`,
           value: paymentOrder.status,
