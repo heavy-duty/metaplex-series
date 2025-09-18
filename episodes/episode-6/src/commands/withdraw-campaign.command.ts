@@ -72,12 +72,15 @@ export async function withdrawCampaignCommand(
 
   // Transfer funds for each order and mark it as claimed
   for (const order of dueUnclaimedOrders) {
-    // Calculate the amount to transfer (max between monthly payout and currently deposited)
-    const transferAmount = Math.max(monthlyPayout, campaign.currentlyDeposited);
+    if (campaign.currentlyDeposited < monthlyPayout) {
+      throw new Error(
+        "There are not enough funds to claim this payment order."
+      );
+    }
 
     // Transfer SOL from campaign asset signer to creator
     const transferSolTransactionBuilder = transferSol(umi, {
-      amount: lamports(transferAmount),
+      amount: lamports(monthlyPayout),
       source: campaignAssetSigner,
       destination: creatorKeypair.publicKey,
     });
@@ -100,7 +103,6 @@ export async function withdrawCampaignCommand(
       plugin: {
         type: "Attributes",
         attributeList: [
-          // TODO: if the last payment order is done, mark as done, if there are pending payment orders and there is no funds, mark as stall.
           { key: "status", value: "active" },
           {
             key: "pledgesCollectionAddress",
@@ -119,7 +121,7 @@ export async function withdrawCampaignCommand(
           },
           {
             key: "currentlyDeposited",
-            value: (campaign.currentlyDeposited - transferAmount).toString(),
+            value: (campaign.currentlyDeposited - monthlyPayout).toString(),
           },
           ...paymentOrders.map((paymentOrder, index) => ({
             key: `paymentOrder_${index + 1}`,
@@ -133,7 +135,7 @@ export async function withdrawCampaignCommand(
       `Updated campaign for payment order #${
         order.monthIndex + 1
       }, new currentlyDeposited: ${
-        campaign.currentlyDeposited - transferAmount
+        campaign.currentlyDeposited - monthlyPayout
       } signature: ${base58.deserialize(updateCampaignSignature.signature)[0]}`
     );
   }
