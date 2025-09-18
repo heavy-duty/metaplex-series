@@ -1,3 +1,4 @@
+export * from "./campaign-pledges.command";
 export * from "./create-campaign.command";
 export * from "./initialize-campaign.command";
 export * from "./pledge-campaign.command";

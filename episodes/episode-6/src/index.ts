@@ -5,6 +5,7 @@ dotenv.config();
 
 import { Command } from "commander";
 import {
+  campaignPledgesCommand,
   createCampaignCommand,
   initializeCampaignCommand,
   pledgeCampaignCommand,
@@ -111,6 +112,17 @@ program
   .requiredOption("--backerKeypair <path>", "Backer's keypair path")
   .requiredOption("--pledgeAssetAddress <string>", "Address of the Pledge NFT")
   .action(createCommand(refundCampaignCommand));
+
+// Command: campaign-pledges
+program
+  .command("campaign-pledges")
+  .description("Queries campaign pledges for the backer")
+  .requiredOption(
+    "--campaignAssetAddress <string>",
+    "Address of the Campaign NFT"
+  )
+  .requiredOption("--backerKeypair <path>", "Backer's keypair path")
+  .action(createCommand(campaignPledgesCommand));
 
 // Command: withdraw
 program
