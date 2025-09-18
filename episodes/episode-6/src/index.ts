@@ -5,12 +5,12 @@ dotenv.config();
 
 import { Command } from "commander";
 import {
+  campaignCommand,
   campaignPledgesCommand,
   createCampaignCommand,
   initializeCampaignCommand,
   pledgeCampaignCommand,
   refundCampaignCommand,
-  statusCommand,
   withdrawCommand,
 } from "./commands";
 import { createCommand } from "./utils";
@@ -78,15 +78,15 @@ program
   )
   .action(createCommand(initializeCampaignCommand));
 
-// Command: status
+// Command: campaign
 program
-  .command("status")
-  .description("Queries campaign status")
+  .command("campaign")
+  .description("Queries campaign data")
   .requiredOption(
     "--campaignAssetAddress <pubkey>",
     "Address of the Campaign NFT"
   )
-  .action(createCommand(statusCommand));
+  .action(createCommand(campaignCommand));
 
 // Command: pledge-campaign
 program

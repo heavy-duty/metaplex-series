@@ -1,13 +1,13 @@
 import { fetchAssetWithMetadata, toCampaign } from "../utils";
 
-export interface StatusCommandOptions {
+export interface CampaignCommandOptions {
   campaignAssetAddress: string;
   rpcUrl: string;
   serverKeypair: string;
   logLevel: string;
 }
 
-export async function statusCommand(options: StatusCommandOptions) {
+export async function campaignCommand(options: CampaignCommandOptions) {
   // Fetch the asset with metadata
   const campaignAssetWithMetadata = await fetchAssetWithMetadata({
     campaignAssetAddress: options.campaignAssetAddress,
