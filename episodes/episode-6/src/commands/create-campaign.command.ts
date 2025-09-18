@@ -4,7 +4,7 @@ import { base58 } from "@metaplex-foundation/umi/serializers";
 import { getUnixTime, parseISO } from "date-fns";
 import { readFile } from "fs/promises";
 import path from "path";
-import { calculatePaymentOrders, getUmi } from "../utils";
+import { calculatePaymentOrders, getUmi, readKeypairFromFile } from "../utils";
 
 export interface CreateCampaignCommandOptions {
   goal: string;
@@ -12,7 +12,7 @@ export interface CreateCampaignCommandOptions {
   name: string;
   description: string;
   symbol: string;
-  creatorWallet: string;
+  creatorKeypair: string;
   projectStartDate: string;
   basePrice: string;
   bondingSlope: string;
@@ -27,6 +27,9 @@ export async function createCampaignCommand(
 ) {
   // Initialize UMI
   const umi = await getUmi(options.serverKeypair);
+
+  // Read the creator keypair
+  const creatorKeypair = await readKeypairFromFile(umi, options.creatorKeypair);
 
   // Upload campaign image
   const campaignImagePath = path.join(
@@ -53,7 +56,7 @@ export async function createCampaignCommand(
     attributes: [
       { trait_type: "goal", value: options.goal },
       { trait_type: "durationMonths", value: options.durationMonths },
-      { trait_type: "creatorWallet", value: options.creatorWallet },
+      { trait_type: "creatorWallet", value: creatorKeypair.publicKey },
       { trait_type: "basePrice", value: options.basePrice },
       { trait_type: "baseUnit", value: options.baseUnit },
       { trait_type: "bondingSlope", value: options.bondingSlope },

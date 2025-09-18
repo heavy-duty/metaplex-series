@@ -6,9 +6,9 @@ dotenv.config();
 import { Command } from "commander";
 import {
   createCampaignCommand,
-  donateCommand,
   initializeCampaignCommand,
-  refundCommand,
+  pledgeCampaignCommand,
+  refundCampaignCommand,
   statusCommand,
   withdrawCommand,
 } from "./commands";
@@ -42,7 +42,7 @@ program
   .requiredOption("--name <string>", "Campaign name")
   .requiredOption("--symbol <string>", "Campaign symbol")
   .requiredOption("--description <string>", "Campaign description")
-  .requiredOption("--creatorWallet <pubkey>", "Creator's wallet public key")
+  .requiredOption("--creatorKeypair <path>", "Creator's keypair file path")
   .requiredOption(
     "--projectStartDate <timestamp>",
     "Project start timestamp (Unix)"
@@ -87,28 +87,30 @@ program
   )
   .action(createCommand(statusCommand));
 
-// Command: donate
+// Command: pledge-campaign
 program
-  .command("donate")
-  .description("Mints Pledge NFTs, transfers SOL to Campaign NFT's account")
+  .command("pledge-campaign")
+  .description("Mints Pledge NFT, transfers SOL to Campaign NFT's account")
   .requiredOption(
     "--campaignAssetAddress <string>",
     "Address of the Campaign NFT"
   )
   .requiredOption("--backerKeypair <path>", "Backer's keypair path")
-  .requiredOption("--amount <lamports>", "Donation amount in lamports")
-  .action(createCommand(donateCommand));
+  .action(createCommand(pledgeCampaignCommand));
 
-// Command: refund
+// Command: refund-campaign
 program
-  .command("refund")
-  .description("Burns backer's Pledge NFTs, refunds total pledged amount")
+  .command("refund-campaign")
+  .description(
+    "Burns backer's Pledge NFT, refunds total pledged amount after slippage"
+  )
   .requiredOption(
     "--campaignAssetAddress <string>",
     "Address of the Campaign NFT"
   )
   .requiredOption("--backerKeypair <path>", "Backer's keypair path")
-  .action(createCommand(refundCommand));
+  .requiredOption("--pledgeAssetAddress <string>", "Address of the Pledge NFT")
+  .action(createCommand(refundCampaignCommand));
 
 // Command: withdraw
 program

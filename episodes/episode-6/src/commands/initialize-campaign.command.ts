@@ -3,14 +3,9 @@ import {
   updatePlugin,
 } from "@metaplex-foundation/mpl-core";
 import {
-  addConfigLines,
-  create as createCandyMachine,
-} from "@metaplex-foundation/mpl-core-candy-machine";
-import {
   createGenericFile,
   generateSigner,
   publicKey,
-  some,
 } from "@metaplex-foundation/umi";
 import { base58 } from "@metaplex-foundation/umi/serializers";
 import { readFile } from "fs/promises";
@@ -41,7 +36,6 @@ export async function initializeCampaignCommand(
 
   // Transform asset with metadata into campaign
   const campaign = toCampaign(campaignAssetWithMetadata);
-  const pledgesAvailable = Math.floor(campaign.goal / campaign.baseUnit);
 
   // Upload pledge collection image
   const collectionImagePath = path.join(
@@ -79,78 +73,6 @@ export async function initializeCampaignCommand(
     }`
   );
 
-  // Upload pledge image
-  const pledgeImagePath = path.join(
-    __dirname,
-    "../../assets",
-    "pledge-image.png"
-  );
-  const pledgeImageBuffer = await readFile(pledgeImagePath);
-  const pledgeImageFile = createGenericFile(
-    pledgeImageBuffer,
-    pledgeImagePath,
-    {
-      contentType: "image/png",
-    }
-  );
-  const [pledgeImage] = await umi.uploader.upload([pledgeImageFile]);
-
-  // Upload pledge metadata
-  const pledgeUri = await umi.uploader.uploadJson({
-    name: options.name,
-    symbol: options.symbol,
-    description: options.description,
-    image: pledgeImage,
-  });
-
-  // Create pledge candy machine
-  const candyMachineSigner = generateSigner(umi);
-  const candyMachineConfigLineSettings = some({
-    prefixName: "Pledge #$ID+1$",
-    nameLength: 0,
-    prefixUri: "https://gateway.irys.xyz/",
-    uriLength: 70,
-    isSequential: false,
-  });
-  const candyMachineGuards = {
-    thirdPartySigner: some({ signerKey: umi.identity.publicKey }),
-  };
-
-  const createCandyMachineTransaction = await createCandyMachine(umi, {
-    candyMachine: candyMachineSigner,
-    collection: collectionMintSigner.publicKey,
-    collectionUpdateAuthority: umi.identity,
-    itemsAvailable: pledgesAvailable,
-    configLineSettings: candyMachineConfigLineSettings,
-    guards: candyMachineGuards,
-  });
-  const createCandyMachineSignature =
-    await createCandyMachineTransaction.sendAndConfirm(umi);
-  console.log(
-    `Create Core Candy Machine signature: ${
-      base58.deserialize(createCandyMachineSignature.signature)[0]
-    }`
-  );
-
-  // Add the items to the candy machine
-  const BATCH_SIZE = 10;
-  let index = 0;
-  while (index < pledgesAvailable) {
-    const batchSize = Math.min(BATCH_SIZE, pledgesAvailable - index);
-    const batch = Array(batchSize).fill({ name: "", uri: pledgeUri });
-    const addConfigLinesSignature = await addConfigLines(umi, {
-      candyMachine: candyMachineSigner.publicKey,
-      index,
-      configLines: batch,
-    }).sendAndConfirm(umi);
-    console.log(
-      `Add Config Lines batch starting at ${index} signature: ${
-        base58.deserialize(addConfigLinesSignature.signature)[0]
-      }`
-    );
-    index += batchSize;
-  }
-
   // Update campaign attributes (status and campaign asset address)
   await updatePlugin(umi, {
     asset: publicKey(options.campaignAssetAddress),
@@ -158,10 +80,6 @@ export async function initializeCampaignCommand(
       type: "Attributes",
       attributeList: [
         { key: "status", value: "active" },
-        {
-          key: "pledgesCandyMachineAddress",
-          value: candyMachineSigner.publicKey,
-        },
         {
           key: "pledgesCollectionAddress",
           value: collectionMintSigner.publicKey,

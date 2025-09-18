@@ -5,6 +5,7 @@ export type CampaignStatus = "draft" | "active";
 export type PaymentOrderStatus = "unclaimed" | "claimed";
 
 export interface Campaign {
+  address: string;
   name: string;
   description: string;
   symbol: string;
@@ -19,7 +20,7 @@ export interface Campaign {
   totalPledges: number;
   refundedPledges: number;
   paymentOrders: { orderNumber: number; status: PaymentOrderStatus }[];
-  pledgesCandyMachineAddress: string | null;
+  pledgesCollectionAddress: string | null;
 }
 
 export function toCampaign(assetWithMetadata: AssetWithMetadata): Campaign {
@@ -126,12 +127,13 @@ export function toCampaign(assetWithMetadata: AssetWithMetadata): Campaign {
     throw new Error("Campaign is missing payment orders");
   }
 
-  const campaignPledgesCandyMachineAddress =
+  const campaignPledgesCollectionAddress =
     assetWithMetadata.attributes?.attributeList.find(
-      (attribute) => attribute.key === "pledgesCandyMachineAddress"
+      (attribute) => attribute.key === "pledgesCollectionAddress"
     )?.value || null;
 
   return {
+    address: assetWithMetadata.publicKey,
     name: assetWithMetadata.name,
     description: assetWithMetadata.metadata.description,
     symbol: assetWithMetadata.metadata.symbol,
@@ -153,6 +155,6 @@ export function toCampaign(assetWithMetadata: AssetWithMetadata): Campaign {
         status: attribute.value as PaymentOrderStatus,
       };
     }),
-    pledgesCandyMachineAddress: campaignPledgesCandyMachineAddress,
+    pledgesCollectionAddress: campaignPledgesCollectionAddress,
   };
 }
