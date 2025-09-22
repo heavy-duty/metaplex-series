@@ -8,6 +8,7 @@ import {
   campaignCommand,
   campaignPledgesCommand,
   createCampaignCommand,
+  finalizeCampaignCommand,
   initializeCampaignCommand,
   pledgeCampaignCommand,
   refundCampaignCommand,
@@ -68,10 +69,10 @@ program
 // Command: initialize-campaign
 program
   .command("initialize-campaign")
-  .description("Sets up pledges Candy Machine and updates Campaign NFT status")
-  .requiredOption("--name <string>", "Campaign name")
-  .requiredOption("--symbol <string>", "Campaign symbol")
-  .requiredOption("--description <string>", "Campaign description")
+  .description("Sets up pledges collection and updates Campaign NFT status")
+  .requiredOption("--name <string>", "Pledge name")
+  .requiredOption("--symbol <string>", "Pledge symbol")
+  .requiredOption("--description <string>", "Pledge description")
   .requiredOption(
     "--campaignAssetAddress <string>",
     "Address of the Campaign NFT"
@@ -134,6 +135,16 @@ program
   )
   .requiredOption("--creatorKeypair <path>", "Creator's keypair path")
   .action(createCommand(withdrawCampaignCommand));
+
+// Command: finalize-campaign
+program
+  .command("finalize-campaign")
+  .description("Sets up rewards Candy Machine and updates Campaign NFT status")
+  .requiredOption(
+    "--campaignAssetAddress <string>",
+    "Address of the Campaign NFT"
+  )
+  .action(createCommand(finalizeCampaignCommand));
 
 // Parse command-line arguments
 program.parse(process.argv);
