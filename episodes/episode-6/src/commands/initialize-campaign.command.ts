@@ -23,7 +23,7 @@ export interface InitializeCampaignCommandOptions {
 }
 
 export async function initializeCampaignCommand(
-  options: InitializeCampaignCommandOptions
+  options: InitializeCampaignCommandOptions,
 ) {
   // Initialize UMI
   const umi = await getUmi(options.serverKeypair);
@@ -41,7 +41,7 @@ export async function initializeCampaignCommand(
   const collectionImagePath = path.join(
     __dirname,
     "../../assets",
-    "pledges-collection-image.png"
+    "pledges-collection-image.png",
   );
   const collectionImageBuffer = await readFile(collectionImagePath);
   const collectionImageFile = createGenericFile(
@@ -49,7 +49,7 @@ export async function initializeCampaignCommand(
     collectionImagePath,
     {
       contentType: "image/png",
-    }
+    },
   );
   const [collectionImage] = await umi.uploader.upload([collectionImageFile]);
 
@@ -70,7 +70,7 @@ export async function initializeCampaignCommand(
   console.log(
     `Create Pledges Collection signature: ${
       base58.deserialize(createCollectionSignature.signature)[0]
-    }`
+    }`,
   );
 
   // Update campaign attributes (status and campaign asset address)
