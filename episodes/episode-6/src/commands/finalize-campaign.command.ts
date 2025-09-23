@@ -1,10 +1,20 @@
-import { create as createCoreNft } from "@metaplex-foundation/mpl-core";
-import { createGenericFile, generateSigner } from "@metaplex-foundation/umi";
+import { createCollectionV1 } from "@metaplex-foundation/mpl-core";
+import { create as createCandyMachine } from "@metaplex-foundation/mpl-core-candy-machine";
+import {
+  createGenericFile,
+  generateSigner,
+  publicKey,
+  some,
+} from "@metaplex-foundation/umi";
 import { base58 } from "@metaplex-foundation/umi/serializers";
-import { getUnixTime, parseISO } from "date-fns";
 import { readFile } from "fs/promises";
 import path from "path";
-import { calculatePaymentOrders, getUmi, readKeypairFromFile } from "../utils";
+import {
+  fetchAssetWithMetadata,
+  getUmi,
+  readKeypairFromFile,
+  toCampaign,
+} from "../utils";
 
 export interface FinalizeCampaignCommandOptions {
   campaignAssetAddress: string;
@@ -15,7 +25,7 @@ export interface FinalizeCampaignCommandOptions {
 }
 
 export async function finalizeCampaignCommand(
-  options: FinalizeCampaignCommandOptions
+  options: FinalizeCampaignCommandOptions,
 ) {
   // Initialize UMI
   const umi = await getUmi(options.serverKeypair);
@@ -32,11 +42,20 @@ export async function finalizeCampaignCommand(
   // Transform asset with metadata into campaign
   const campaign = toCampaign(campaignAssetWithMetadata);
 
+  // Validate campaign
+  if (!campaign.pledgesCollectionAddress) {
+    throw new Error("Pledges collection address not defined");
+  }
+
+  if (campaign.creatorWallet !== creatorKeypair.publicKey) {
+    throw new Error("Not authorized to finalize this campaign");
+  }
+
   // Upload reward collection image
   const collectionImagePath = path.join(
     __dirname,
     "../../assets",
-    "rewards-collection-image.png"
+    "rewards-collection-image.png",
   );
   const collectionImageBuffer = await readFile(collectionImagePath);
   const collectionImageFile = createGenericFile(
@@ -44,7 +63,7 @@ export async function finalizeCampaignCommand(
     collectionImagePath,
     {
       contentType: "image/png",
-    }
+    },
   );
   const [collectionImage] = await umi.uploader.upload([collectionImageFile]);
 
@@ -65,7 +84,7 @@ export async function finalizeCampaignCommand(
   console.log(
     `Create Rewards Collection signature: ${
       base58.deserialize(createCollectionSignature.signature)[0]
-    }`
+    }`,
   );
 
   // Create the rewards candy machine
@@ -78,7 +97,9 @@ export async function finalizeCampaignCommand(
     isSequential: false,
   });
   const candyMachineGuards = {
-    assetBurn: some({ requiredCollection: publicKey(campaign.pledgesCollectionAddress) }),
+    assetBurn: some({
+      requiredCollection: publicKey(campaign.pledgesCollectionAddress),
+    }),
   };
 
   const rewardsAvailable = campaign.totalPledges - campaign.refundedPledges;
@@ -95,10 +116,10 @@ export async function finalizeCampaignCommand(
   console.log(
     `Create Core Candy Machine signature: ${
       base58.deserialize(createCandyMachineSignature.signature)[0]
-    }`
+    }`,
   );
 
   // TODO: add all the items to the candy machine (use generic reward for now)
-  
+
   // TODO: update the candy machine to mark it as finalized.
 }
