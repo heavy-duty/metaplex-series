@@ -1,5 +1,8 @@
 import { createCollectionV1 } from "@metaplex-foundation/mpl-core";
-import { create as createCandyMachine } from "@metaplex-foundation/mpl-core-candy-machine";
+import {
+  addConfigLines,
+  create as createCandyMachine,
+} from "@metaplex-foundation/mpl-core-candy-machine";
 import {
   createGenericFile,
   generateSigner,
@@ -119,7 +122,46 @@ export async function finalizeCampaignCommand(
     }`,
   );
 
-  // TODO: add all the items to the candy machine (use generic reward for now)
+  // Add all the items to the candy machine (use generic reward for now)
+  const rewardImagePath = path.join(__dirname, "../assets", "reward-image.png");
+  const rewardImageBuffer = await readFile(rewardImagePath);
+  const rewardImageFile = createGenericFile(
+    rewardImageBuffer,
+    rewardImagePath,
+    {
+      contentType: "image/png",
+    },
+  );
+  const [rewardImage] = await umi.uploader.upload([rewardImageFile]);
+  const rewardUri = await umi.uploader.uploadJson({
+    name: "Reward",
+    symbol: "REWARD",
+    description: "A reward from a successful campaign.",
+    image: rewardImage,
+  });
+  const rewardUriSegments = rewardUri.split("/");
+  const rewardAssetHash = rewardUriSegments[rewardUriSegments.length - 1];
+  const candyMachineConfigLines = new Array(rewardsAvailable).fill({
+    name: "",
+    uri: rewardAssetHash,
+  });
+
+  const BATCH_SIZE = 10;
+  let index = 0;
+  while (index < candyMachineConfigLines.length) {
+    const batch = candyMachineConfigLines.slice(index, index + BATCH_SIZE);
+    const addConfigLinesSignature = await addConfigLines(umi, {
+      candyMachine: candyMachineSigner.publicKey,
+      index: index,
+      configLines: batch,
+    }).sendAndConfirm(umi);
+    console.log(
+      `Add Config Lines batch ${Math.floor(index / BATCH_SIZE) + 1}/${Math.ceil(candyMachineConfigLines.length / BATCH_SIZE)} signature: ${
+        base58.deserialize(addConfigLinesSignature.signature)[0]
+      }`,
+    );
+    index += BATCH_SIZE;
+  }
 
   // TODO: update the candy machine to mark it as finalized.
 }
