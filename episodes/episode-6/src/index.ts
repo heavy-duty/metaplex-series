@@ -7,6 +7,7 @@ import { Command } from "commander";
 import {
   campaignCommand,
   campaignPledgesCommand,
+  claimCampaignCommand,
   createCampaignCommand,
   finalizeCampaignCommand,
   initializeCampaignCommand,
@@ -26,12 +27,12 @@ program
   .option(
     "--rpcUrl <url>",
     "Solana RPC URL",
-    process.env.RPC_URL || "https://api.devnet.solana.com"
+    process.env.RPC_URL || "https://api.devnet.solana.com",
   )
   .option(
     "--serverKeypair <path>",
     "Server keypair path",
-    process.env.SERVER_KEYPAIR_PATH || "./server-keypair.json"
+    process.env.SERVER_KEYPAIR_PATH || "./server-keypair.json",
   )
   .option("--logLevel <level>", "Log level (error|warn|info|debug)", "info");
 
@@ -47,22 +48,22 @@ program
   .requiredOption("--creatorKeypair <path>", "Creator's keypair file path")
   .requiredOption(
     "--projectStartDate <timestamp>",
-    "Project start timestamp (Unix)"
+    "Project start timestamp (Unix)",
   )
   .option(
     "--basePrice <lamports>",
     "Initial price in lamports",
-    process.env.BASE_PRICE || "100000000"
+    process.env.BASE_PRICE || "100000000",
   )
   .option(
     "--bondingSlope <lamports>",
     "Bonding curve slope",
-    process.env.BONDING_SLOPE || "10000000"
+    process.env.BONDING_SLOPE || "10000000",
   )
   .option(
     "--baseUnit <lamports>",
     "Lamports per NFT",
-    process.env.BASE_UNIT || "1000000000"
+    process.env.BASE_UNIT || "1000000000",
   )
   .action(createCommand(createCampaignCommand));
 
@@ -75,7 +76,7 @@ program
   .requiredOption("--description <string>", "Pledge description")
   .requiredOption(
     "--campaignAssetAddress <string>",
-    "Address of the Campaign NFT"
+    "Address of the Campaign NFT",
   )
   .action(createCommand(initializeCampaignCommand));
 
@@ -85,7 +86,7 @@ program
   .description("Queries campaign data")
   .requiredOption(
     "--campaignAssetAddress <pubkey>",
-    "Address of the Campaign NFT"
+    "Address of the Campaign NFT",
   )
   .action(createCommand(campaignCommand));
 
@@ -95,7 +96,7 @@ program
   .description("Mints Pledge NFT, transfers SOL to Campaign NFT's account")
   .requiredOption(
     "--campaignAssetAddress <string>",
-    "Address of the Campaign NFT"
+    "Address of the Campaign NFT",
   )
   .requiredOption("--backerKeypair <path>", "Backer's keypair path")
   .action(createCommand(pledgeCampaignCommand));
@@ -104,11 +105,11 @@ program
 program
   .command("refund-campaign")
   .description(
-    "Burns backer's Pledge NFT, refunds total pledged amount after slippage"
+    "Burns backer's Pledge NFT, refunds total pledged amount after slippage",
   )
   .requiredOption(
     "--campaignAssetAddress <string>",
-    "Address of the Campaign NFT"
+    "Address of the Campaign NFT",
   )
   .requiredOption("--backerKeypair <path>", "Backer's keypair path")
   .requiredOption("--pledgeAssetAddress <string>", "Address of the Pledge NFT")
@@ -120,7 +121,7 @@ program
   .description("Queries campaign pledges for the backer")
   .requiredOption(
     "--campaignAssetAddress <string>",
-    "Address of the Campaign NFT"
+    "Address of the Campaign NFT",
   )
   .requiredOption("--backerKeypair <path>", "Backer's keypair path")
   .action(createCommand(campaignPledgesCommand));
@@ -131,7 +132,7 @@ program
   .description("Batch-claims eligible payment orders post-projectStartDate")
   .requiredOption(
     "--campaignAssetAddress <string>",
-    "Address of the Campaign NFT"
+    "Address of the Campaign NFT",
   )
   .requiredOption("--creatorKeypair <path>", "Creator's keypair path")
   .action(createCommand(withdrawCampaignCommand));
@@ -142,9 +143,21 @@ program
   .description("Sets up rewards Candy Machine and updates Campaign NFT status")
   .requiredOption(
     "--campaignAssetAddress <string>",
-    "Address of the Campaign NFT"
+    "Address of the Campaign NFT",
   )
   .action(createCommand(finalizeCampaignCommand));
+
+// Command: claim-campaign
+program
+  .command("claim-campaign")
+  .description("Burn a pledge NFT in exchange of a reward NFT")
+  .requiredOption(
+    "--campaignAssetAddress <string>",
+    "Address of the Campaign NFT",
+  )
+  .requiredOption("--backerKeypair <path>", "Backer's keypair path")
+  .requiredOption("--pledgeAssetAddress <string>", "Address of the Pledge NFT")
+  .action(createCommand(claimCampaignCommand));
 
 // Parse command-line arguments
 program.parse(process.argv);
