@@ -20,7 +20,6 @@ export interface CreateCampaignCommandOptions {
   projectStartDate: string;
   basePrice: string;
   bondingSlope: string;
-  baseUnit: string;
   rpcUrl: string;
   serverKeypair: string;
   logLevel: string;
@@ -52,7 +51,6 @@ export async function createCampaignCommand(
       { trait_type: "durationMonths", value: options.durationMonths },
       { trait_type: "creatorWallet", value: creatorKeypair.publicKey },
       { trait_type: "basePrice", value: options.basePrice },
-      { trait_type: "baseUnit", value: options.baseUnit },
       { trait_type: "bondingSlope", value: options.bondingSlope },
       {
         trait_type: "projectStartDate",

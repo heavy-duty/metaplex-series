@@ -178,7 +178,7 @@ export async function finalizeCampaignCommand(
     },
   }).sendAndConfirm(umi);
   console.log(
-    `Update Campaign signature: ${
+    `Update Campaign (address: ${campaign.address}) signature: ${
       base58.deserialize(updateCampaignSignature.signature)[0]
     }`,
   );

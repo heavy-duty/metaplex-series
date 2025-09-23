@@ -61,24 +61,17 @@ program
     "Bonding curve slope",
     process.env.BONDING_SLOPE || "10000000",
   )
-  .option(
-    "--baseUnit <lamports>",
-    "Lamports per NFT",
-    process.env.BASE_UNIT || "1000000000",
-  )
   .action(createCommand(createCampaignCommand));
 
 // Command: initialize-campaign
 program
   .command("initialize-campaign")
   .description("Sets up pledges collection and updates Campaign NFT status")
-  .requiredOption("--name <string>", "Pledge name")
-  .requiredOption("--symbol <string>", "Pledge symbol")
-  .requiredOption("--description <string>", "Pledge description")
   .requiredOption(
     "--campaignAssetAddress <string>",
     "Address of the Campaign NFT",
   )
+  .requiredOption("--creatorKeypair <path>", "Creator's keypair path")
   .action(createCommand(initializeCampaignCommand));
 
 // Command: campaign
@@ -146,6 +139,7 @@ program
     "--campaignAssetAddress <string>",
     "Address of the Campaign NFT",
   )
+  .requiredOption("--creatorKeypair <path>", "Creator's keypair path")
   .action(createCommand(finalizeCampaignCommand));
 
 // Command: claim-campaign

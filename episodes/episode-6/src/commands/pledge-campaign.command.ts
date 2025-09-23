@@ -56,15 +56,17 @@ export async function pledgeCampaignCommand(
   const currentPledgePrice =
     campaign.basePrice + netPledgeSupply * campaign.bondingSlope;
 
+  const campaignAssetSigner = findAssetSignerPda(umi, {
+    asset: publicKey(campaign.address),
+  });
+  const transferAmount = lamports(currentPledgePrice);
   const transferSolSignature = await transferSol(umi, {
-    amount: lamports(currentPledgePrice),
-    destination: findAssetSignerPda(umi, {
-      asset: publicKey(campaign.address),
-    }),
+    amount: transferAmount,
+    destination: campaignAssetSigner,
     source: createSignerFromKeypair(umi, backerKeypair),
   }).sendAndConfirm(umi);
   console.log(
-    `Transfer SOL signature: ${
+    `Transfer ${Number(transferAmount.basisPoints) / Math.pow(10, transferAmount.decimals)} SOL (to address: ${campaignAssetSigner[0]}) signature: ${
       base58.deserialize(transferSolSignature.signature)[0]
     }`,
   );
@@ -127,7 +129,7 @@ export async function pledgeCampaignCommand(
     },
   }).sendAndConfirm(umi);
   console.log(
-    `Update Campaign signature: ${
+    `Update Campaign (address: ${campaign.address}) signature: ${
       base58.deserialize(updateCampaignSignature.signature)[0]
     }`,
   );

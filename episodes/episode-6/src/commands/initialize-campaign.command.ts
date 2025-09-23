@@ -8,15 +8,14 @@ import path from "path";
 import {
   fetchAssetWithMetadata,
   getUmi,
+  readKeypairFromFile,
   toCampaign,
   uploadImage,
 } from "../utils";
 
 export interface InitializeCampaignCommandOptions {
   campaignAssetAddress: string;
-  name: string;
-  description: string;
-  symbol: string;
+  creatorKeypair: string;
   rpcUrl: string;
   serverKeypair: string;
   logLevel: string;
@@ -28,6 +27,9 @@ export async function initializeCampaignCommand(
   // Initialize UMI
   const umi = await getUmi(options.serverKeypair);
 
+  // Read the creator keypair
+  const creatorKeypair = await readKeypairFromFile(umi, options.creatorKeypair);
+
   // Fetch the campaign asset with its metadata
   const campaignAssetWithMetadata = await fetchAssetWithMetadata({
     serverKeypair: options.serverKeypair,
@@ -36,6 +38,14 @@ export async function initializeCampaignCommand(
 
   // Transform asset with metadata into campaign
   const campaign = toCampaign(campaignAssetWithMetadata);
+
+  if (campaign.status !== "draft") {
+    throw new Error("Initialize is only allowed for draft campaigns");
+  }
+
+  if (campaign.creatorWallet !== creatorKeypair.publicKey) {
+    throw new Error("You are not authorized to initialize this campaign");
+  }
 
   // Upload metadata and create pledges collection
   const pledgesCollectionImage = await uploadImage(
@@ -83,7 +93,7 @@ export async function initializeCampaignCommand(
     },
   }).sendAndConfirm(umi);
   console.log(
-    `Update campaign signature: ${
+    `Update campaign (address: ${campaign.address}) signature: ${
       base58.deserialize(updateCampaignSignature.signature)[0]
     }`,
   );

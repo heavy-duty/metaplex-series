@@ -32,7 +32,7 @@ export async function withdrawCampaignCommand(
   // Initialize UMI
   const umi = await getUmi(options.serverKeypair);
 
-  // Read the backer keypair
+  // Read the creator keypair
   const creatorKeypair = await readKeypairFromFile(umi, options.creatorKeypair);
 
   // Fetch the campaign asset with its metadata
@@ -86,10 +86,11 @@ export async function withdrawCampaignCommand(
     }
 
     // Transfer SOL from campaign asset signer to creator
+    const transferAmount = lamports(monthlyPayout);
     const transferSolSignature = await execute(umi, {
       asset: campaignAssetWithMetadata,
       instructions: transferSol(umi, {
-        amount: lamports(monthlyPayout),
+        amount: transferAmount,
         source: campaignAssetSigner,
         destination: creatorKeypair.publicKey,
       }).getInstructions(),
@@ -97,7 +98,7 @@ export async function withdrawCampaignCommand(
       assetSigner: campaignAssetSignerPda,
     }).sendAndConfirm(umi);
     console.log(
-      `Transfer SOL for payment order ${order.monthIndex + 1} signature: ${
+      `Transfer ${Number(transferAmount.basisPoints) / Math.pow(10, transferAmount.decimals)} SOL (to address: ${creatorKeypair.publicKey}) signature: ${
         base58.deserialize(transferSolSignature.signature)[0]
       }`,
     );

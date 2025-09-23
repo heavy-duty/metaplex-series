@@ -44,6 +44,6 @@ export async function campaignPledgesCommand(
   );
 
   myPledgeNfts.forEach((pledgeNft) => {
-    console.log(` - ${pledgeNft.name}: ${pledgeNft.publicKey}.`);
+    console.log(` - ${pledgeNft.name}: ${pledgeNft.publicKey}`);
   });
 }

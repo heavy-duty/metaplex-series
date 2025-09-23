@@ -44,6 +44,6 @@ export async function campaignRewardsCommand(
   );
 
   myRewardNfts.forEach((rewardNft) => {
-    console.log(` - ${rewardNft.name}: ${rewardNft.publicKey}.`);
+    console.log(` - ${rewardNft.name}: ${rewardNft.publicKey}`);
   });
 }

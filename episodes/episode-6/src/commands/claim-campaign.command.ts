@@ -2,6 +2,7 @@ import { fetchAssetV1 } from "@metaplex-foundation/mpl-core";
 import { mintV1 } from "@metaplex-foundation/mpl-core-candy-machine";
 import { setComputeUnitLimit } from "@metaplex-foundation/mpl-toolbox";
 import {
+  createSignerFromKeypair,
   generateSigner,
   publicKey,
   some,
@@ -63,13 +64,13 @@ export async function claimCampaignCommand(
   }
 
   // Mint a reward nft from the candy machine by burning the pledge nft
-  const mintSigner = generateSigner(umi);
-  const mintSignature = await transactionBuilder()
+  const rewardSigner = generateSigner(umi);
+  const mintRewardSignature = await transactionBuilder()
     .add(setComputeUnitLimit(umi, { units: 800_000 }))
     .add(
       mintV1(umi, {
         candyMachine: publicKey(campaign.rewardsCandyMachineAddress),
-        asset: mintSigner,
+        asset: rewardSigner,
         collection: publicKey(campaign.rewardsCollectionAddress),
         mintArgs: {
           assetBurn: some({
@@ -77,10 +78,11 @@ export async function claimCampaignCommand(
             asset: publicKey(options.pledgeAssetAddress),
           }),
         },
+        minter: createSignerFromKeypair(umi, backerKeypair),
       }),
     )
     .sendAndConfirm(umi);
   console.log(
-    `Mint signature: ${base58.deserialize(mintSignature.signature)[0]}`,
+    `Mint reward (address: ${rewardSigner.publicKey}) signature: ${base58.deserialize(mintRewardSignature.signature)[0]}`,
   );
 }

@@ -52,10 +52,21 @@ export async function refundCampaignCommand(
     throw new Error("Pledges collection address is missing.");
   }
 
+  // Fetch pledge asset and validate owner
+  const pledgeAsset = await fetchAssetV1(
+    umi,
+    publicKey(options.pledgeAssetAddress),
+  );
+
+  if (pledgeAsset.owner !== backerKeypair.publicKey) {
+    throw new Error("You are not authorized to refund with this pledge");
+  }
+
   // Handle refund transfer
   const netPledgeSupply = campaign.totalPledges - campaign.refundedPledges;
-  const refundAmount =
+  const currentPledgePrice =
     campaign.basePrice + (netPledgeSupply - 1) * campaign.bondingSlope;
+  const refundAmount = lamports(currentPledgePrice);
   const campaignAssetSignerPda = findAssetSignerPda(umi, {
     asset: publicKey(campaign.address),
   });
@@ -63,7 +74,7 @@ export async function refundCampaignCommand(
   const transferSolSignature = await execute(umi, {
     asset: campaignAssetWithMetadata,
     instructions: transferSol(umi, {
-      amount: lamports(refundAmount),
+      amount: refundAmount,
       source: campaignAssetSigner,
       destination: backerKeypair.publicKey,
     }).getInstructions(),
@@ -71,7 +82,7 @@ export async function refundCampaignCommand(
     assetSigner: campaignAssetSignerPda,
   }).sendAndConfirm(umi);
   console.log(
-    `Transfer SOL signature: ${
+    `Transfer ${Number(refundAmount.basisPoints) / Math.pow(10, refundAmount.decimals)} SOL (to address: ${backerKeypair.publicKey}) signature: ${
       base58.deserialize(transferSolSignature.signature)[0]
     }`,
   );
@@ -81,17 +92,13 @@ export async function refundCampaignCommand(
     umi,
     publicKey(campaign.pledgesCollectionAddress),
   );
-  const pledgeAsset = await fetchAssetV1(
-    umi,
-    publicKey(options.pledgeAssetAddress),
-  );
   const burnPledgeSignature = await burn(umi, {
     asset: pledgeAsset,
     collection: pledgesCollection,
     authority: createSignerFromKeypair(umi, backerKeypair),
   }).sendAndConfirm(umi);
   console.log(
-    `Burn Pledge signature: ${
+    `Burn Pledge (address: ${options.pledgeAssetAddress}) signature: ${
       base58.deserialize(burnPledgeSignature.signature)[0]
     }`,
   );
@@ -118,7 +125,7 @@ export async function refundCampaignCommand(
         },
         {
           key: "currentlyDeposited",
-          value: (campaign.currentlyDeposited - refundAmount).toString(),
+          value: (campaign.currentlyDeposited - currentPledgePrice).toString(),
         },
         ...campaign.paymentOrders.map((paymentOrder) => ({
           key: `paymentOrder_${paymentOrder.orderNumber}`,
@@ -128,7 +135,7 @@ export async function refundCampaignCommand(
     },
   }).sendAndConfirm(umi);
   console.log(
-    `Update Campaign signature: ${
+    `Update Campaign (address: ${campaign.address}) signature: ${
       base58.deserialize(updateCampaignSignature.signature)[0]
     }`,
   );

@@ -1,6 +1,6 @@
 import { AssetWithMetadata } from "./fetch-asset-with-metadata";
 
-export type CampaignStatus = "draft" | "active";
+export type CampaignStatus = "draft" | "active" | "finalized";
 
 export type PaymentOrderStatus = "unclaimed" | "claimed";
 
@@ -13,7 +13,6 @@ export interface Campaign {
   creatorWallet: string;
   projectStartDate: Date;
   goal: number;
-  baseUnit: number;
   basePrice: number;
   bondingSlope: number;
   status: CampaignStatus;
@@ -35,15 +34,6 @@ export function toCampaign(assetWithMetadata: AssetWithMetadata): Campaign {
 
   if (campaignGoal === null) {
     throw new Error("Campaign is missing goal");
-  }
-
-  const campaignBaseUnit =
-    assetWithMetadata.metadata.attributes.find(
-      (attribute) => attribute.trait_type === "baseUnit",
-    )?.value || null;
-
-  if (campaignBaseUnit === null) {
-    throw new Error("Campaign is missing baseUnit");
   }
 
   const campaignBasePrice =
@@ -136,7 +126,11 @@ export function toCampaign(assetWithMetadata: AssetWithMetadata): Campaign {
     throw new Error("Campaign is missing status");
   }
 
-  if (campaignStatus !== "draft" && campaignStatus !== "active") {
+  if (
+    campaignStatus !== "draft" &&
+    campaignStatus !== "active" &&
+    campaignStatus !== "finalized"
+  ) {
     throw new Error("Campaign status is invalid");
   }
 
@@ -171,7 +165,6 @@ export function toCampaign(assetWithMetadata: AssetWithMetadata): Campaign {
     symbol: assetWithMetadata.metadata.symbol,
     goal: parseInt(campaignGoal, 10),
     basePrice: parseInt(campaignBasePrice, 10),
-    baseUnit: parseInt(campaignBaseUnit, 10),
     bondingSlope: parseInt(campaignBondingSlope, 10),
     durationMonths: parseInt(campaignDurationMonths, 10),
     creatorWallet: campaignCreatorWallet,
