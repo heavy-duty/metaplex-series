@@ -74,7 +74,7 @@ export async function initializeCampaignCommand(
   );
 
   // Update campaign attributes (status and campaign asset address)
-  await updatePlugin(umi, {
+  const updateCampaignSignature = await updatePlugin(umi, {
     asset: publicKey(options.campaignAssetAddress),
     plugin: {
       type: "Attributes",
@@ -95,4 +95,9 @@ export async function initializeCampaignCommand(
       ],
     },
   }).sendAndConfirm(umi);
+  console.log(
+    `Update campaign signature: ${
+      base58.deserialize(updateCampaignSignature.signature)[0]
+    }`,
+  );
 }
