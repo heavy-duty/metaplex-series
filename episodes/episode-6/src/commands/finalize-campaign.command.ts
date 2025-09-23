@@ -1,4 +1,7 @@
-import { createCollectionV1 } from "@metaplex-foundation/mpl-core";
+import {
+  createCollectionV1,
+  updatePlugin,
+} from "@metaplex-foundation/mpl-core";
 import {
   addConfigLines,
   create as createCandyMachine,
@@ -163,5 +166,37 @@ export async function finalizeCampaignCommand(
     index += BATCH_SIZE;
   }
 
-  // TODO: update the candy machine to mark it as finalized.
+  // Update the candy machine to mark it as finalized.
+  const updateCampaignSignature = await updatePlugin(umi, {
+    asset: publicKey(options.campaignAssetAddress),
+    plugin: {
+      type: "Attributes",
+      attributeList: [
+        { key: "status", value: "finalized" },
+        {
+          key: "pledgesCollectionAddress",
+          value: publicKey(campaign.pledgesCollectionAddress),
+        },
+        { key: "totalPledges", value: campaign.totalPledges.toString() },
+        { key: "refundedPledges", value: campaign.refundedPledges.toString() },
+        {
+          key: "totalDeposited",
+          value: campaign.totalDeposited.toString(),
+        },
+        {
+          key: "currentlyDeposited",
+          value: campaign.currentlyDeposited.toString(),
+        },
+        ...campaign.paymentOrders.map((paymentOrder) => ({
+          key: `paymentOrder_${paymentOrder.orderNumber}`,
+          value: paymentOrder.status,
+        })),
+      ],
+    },
+  }).sendAndConfirm(umi);
+  console.log(
+    `Update Campaign signature: ${
+      base58.deserialize(updateCampaignSignature.signature)[0]
+    }`,
+  );
 }
