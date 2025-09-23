@@ -6,20 +6,19 @@ import {
 } from "@metaplex-foundation/mpl-core";
 import { transferSol } from "@metaplex-foundation/mpl-toolbox";
 import {
-  createGenericFile,
   createSignerFromKeypair,
   generateSigner,
   lamports,
   publicKey,
 } from "@metaplex-foundation/umi";
 import { base58 } from "@metaplex-foundation/umi/serializers";
-import { readFile } from "fs/promises";
 import path from "path";
 import {
   fetchAssetWithMetadata,
   getUmi,
   readKeypairFromFile,
   toCampaign,
+  uploadImage,
 } from "../utils";
 
 export interface PledgeCampaignCommandOptions {
@@ -70,32 +69,18 @@ export async function pledgeCampaignCommand(
     }`,
   );
 
-  // Upload pledge image
-  const pledgeImagePath = path.join(
-    __dirname,
-    "../../assets",
-    "pledge-image.png",
+  // Upload metadata and create pledge
+  const pledgeImage = await uploadImage(
+    umi,
+    path.join(__dirname, "../../assets", "pledge-image.png"),
   );
-  const pledgeImageBuffer = await readFile(pledgeImagePath);
-  const pledgeImageFile = createGenericFile(
-    pledgeImageBuffer,
-    pledgeImagePath,
-    {
-      contentType: "image/png",
-    },
-  );
-  const [pledgeImage] = await umi.uploader.upload([pledgeImageFile]);
-
-  // Upload pledge metadata
   const pledgeUri = await umi.uploader.uploadJson({
     name: `Pledge #${campaign.totalPledges}`,
     symbol: "PLEDGE",
     description: `This NFT represents a pledge to the campaign with address: ${campaign.address}`,
     image: pledgeImage,
   });
-
-  // Send transaction to mint the pledge NFT
-  const collection = await fetchCollection(
+  const pledgesCollection = await fetchCollection(
     umi,
     publicKey(campaign.pledgesCollectionAddress),
   );
@@ -104,7 +89,7 @@ export async function pledgeCampaignCommand(
     asset: pledgeSigner,
     name: `Pledge #${campaign.totalPledges}`,
     uri: pledgeUri,
-    collection,
+    collection: pledgesCollection,
     owner: backerKeypair.publicKey,
   }).sendAndConfirm(umi);
   console.log(

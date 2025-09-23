@@ -49,6 +49,10 @@ export async function withdrawCampaignCommand(
     throw new Error("You are not authorized to withdraw from this campaign");
   }
 
+  if (campaign.status !== "active") {
+    throw new Error("Withdraw is only allowed for active campaigns");
+  }
+
   // Get the campaign payment orders
   const paymentOrders = calculatePaymentOrders(
     campaign.durationMonths,
@@ -82,15 +86,13 @@ export async function withdrawCampaignCommand(
     }
 
     // Transfer SOL from campaign asset signer to creator
-    const transferSolTransactionBuilder = transferSol(umi, {
-      amount: lamports(monthlyPayout),
-      source: campaignAssetSigner,
-      destination: creatorKeypair.publicKey,
-    });
-
     const transferSolSignature = await execute(umi, {
       asset: campaignAssetWithMetadata,
-      instructions: transferSolTransactionBuilder.getInstructions(),
+      instructions: transferSol(umi, {
+        amount: lamports(monthlyPayout),
+        source: campaignAssetSigner,
+        destination: creatorKeypair.publicKey,
+      }).getInstructions(),
       payer: umi.identity,
       assetSigner: campaignAssetSignerPda,
     }).sendAndConfirm(umi);

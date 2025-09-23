@@ -1,10 +1,14 @@
 import { create as createCoreNft } from "@metaplex-foundation/mpl-core";
-import { createGenericFile, generateSigner } from "@metaplex-foundation/umi";
+import { generateSigner } from "@metaplex-foundation/umi";
 import { base58 } from "@metaplex-foundation/umi/serializers";
 import { getUnixTime, parseISO } from "date-fns";
-import { readFile } from "fs/promises";
 import path from "path";
-import { calculatePaymentOrders, getUmi, readKeypairFromFile } from "../utils";
+import {
+  calculatePaymentOrders,
+  getUmi,
+  readKeypairFromFile,
+  uploadImage,
+} from "../utils";
 
 export interface CreateCampaignCommandOptions {
   goal: string;
@@ -32,20 +36,10 @@ export async function createCampaignCommand(
   const creatorKeypair = await readKeypairFromFile(umi, options.creatorKeypair);
 
   // Upload campaign image
-  const campaignImagePath = path.join(
-    __dirname,
-    "../../assets",
-    "campaign-image.png",
+  const campaignImage = await uploadImage(
+    umi,
+    path.join(__dirname, "../../assets", "campaign-image.png"),
   );
-  const campaignImageBuffer = await readFile(campaignImagePath);
-  const campaignImageFile = createGenericFile(
-    campaignImageBuffer,
-    campaignImagePath,
-    {
-      contentType: "image/png",
-    },
-  );
-  const [campaignImage] = await umi.uploader.upload([campaignImageFile]);
 
   // Upload campaign metadata
   const campaignUri = await umi.uploader.uploadJson({
@@ -78,9 +72,9 @@ export async function createCampaignCommand(
   );
 
   // Create a Campaign NFT using Core
-  const assetSigner = generateSigner(umi);
+  const campaignSigner = generateSigner(umi);
   const createCampaignSignature = await createCoreNft(umi, {
-    asset: assetSigner,
+    asset: campaignSigner,
     name: options.name,
     uri: campaignUri,
     owner: umi.identity.publicKey,
@@ -102,7 +96,7 @@ export async function createCampaignCommand(
     ],
   }).sendAndConfirm(umi);
   console.log(
-    `Create Campaign NFT (address: ${assetSigner.publicKey}) signature: ${
+    `Create Campaign NFT (address: ${campaignSigner.publicKey}) signature: ${
       base58.deserialize(createCampaignSignature.signature)[0]
     }`,
   );

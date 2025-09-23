@@ -52,28 +52,21 @@ export async function refundCampaignCommand(
     throw new Error("Pledges collection address is missing.");
   }
 
-  // Calculate the refund amount and transfer SOL from campaign asset signer to backer
+  // Handle refund transfer
   const netPledgeSupply = campaign.totalPledges - campaign.refundedPledges;
   const refundAmount =
     campaign.basePrice + (netPledgeSupply - 1) * campaign.bondingSlope;
-
-  // Create a noop signer for the campaign asset's signer PDA
   const campaignAssetSignerPda = findAssetSignerPda(umi, {
     asset: publicKey(campaign.address),
   });
   const campaignAssetSigner = createNoopSigner(campaignAssetSignerPda[0]);
-
-  // Transfer SOL from campaign asset signer to backer using execute
-  const transferSolTransactionBuilder = transferSol(umi, {
-    amount: lamports(refundAmount),
-    source: campaignAssetSigner,
-    destination: backerKeypair.publicKey,
-  });
-
-  // Handle the transaction using execute
   const transferSolSignature = await execute(umi, {
     asset: campaignAssetWithMetadata,
-    instructions: transferSolTransactionBuilder.getInstructions(),
+    instructions: transferSol(umi, {
+      amount: lamports(refundAmount),
+      source: campaignAssetSigner,
+      destination: backerKeypair.publicKey,
+    }).getInstructions(),
     payer: umi.identity,
     assetSigner: campaignAssetSignerPda,
   }).sendAndConfirm(umi);
@@ -83,22 +76,18 @@ export async function refundCampaignCommand(
     }`,
   );
 
-  // Fetch the pledge collection
-  const collection = await fetchCollection(
+  // Burn the pledge NFT
+  const pledgesCollection = await fetchCollection(
     umi,
     publicKey(campaign.pledgesCollectionAddress),
   );
-
-  // Fetch the pledge asset
   const pledgeAsset = await fetchAssetV1(
     umi,
     publicKey(options.pledgeAssetAddress),
   );
-
-  // Burn the pledge NFT
   const burnPledgeSignature = await burn(umi, {
     asset: pledgeAsset,
-    collection,
+    collection: pledgesCollection,
     authority: createSignerFromKeypair(umi, backerKeypair),
   }).sendAndConfirm(umi);
   console.log(

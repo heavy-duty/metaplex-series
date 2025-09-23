@@ -2,15 +2,15 @@ import {
   createCollectionV1,
   updatePlugin,
 } from "@metaplex-foundation/mpl-core";
-import {
-  createGenericFile,
-  generateSigner,
-  publicKey,
-} from "@metaplex-foundation/umi";
+import { generateSigner, publicKey } from "@metaplex-foundation/umi";
 import { base58 } from "@metaplex-foundation/umi/serializers";
-import { readFile } from "fs/promises";
 import path from "path";
-import { fetchAssetWithMetadata, getUmi, toCampaign } from "../utils";
+import {
+  fetchAssetWithMetadata,
+  getUmi,
+  toCampaign,
+  uploadImage,
+} from "../utils";
 
 export interface InitializeCampaignCommandOptions {
   campaignAssetAddress: string;
@@ -37,38 +37,25 @@ export async function initializeCampaignCommand(
   // Transform asset with metadata into campaign
   const campaign = toCampaign(campaignAssetWithMetadata);
 
-  // Upload pledge collection image
-  const collectionImagePath = path.join(
-    __dirname,
-    "../../assets",
-    "pledges-collection-image.png",
+  // Upload metadata and create pledges collection
+  const pledgesCollectionImage = await uploadImage(
+    umi,
+    path.join(__dirname, "../../assets", "pledges-collection-image.png"),
   );
-  const collectionImageBuffer = await readFile(collectionImagePath);
-  const collectionImageFile = createGenericFile(
-    collectionImageBuffer,
-    collectionImagePath,
-    {
-      contentType: "image/png",
-    },
-  );
-  const [collectionImage] = await umi.uploader.upload([collectionImageFile]);
-
-  // Upload pledge collection metadata
-  const collectionUri = await umi.uploader.uploadJson({
+  const pledgesCollectionUri = await umi.uploader.uploadJson({
     name: "Pledges Collection",
     symbol: "PLEDGE",
     description: "A collection of pledges for a campaign",
-    image: collectionImage,
+    image: pledgesCollectionImage,
   });
-
-  const collectionMintSigner = generateSigner(umi);
+  const pledgesCollectionSigner = generateSigner(umi);
   const createCollectionSignature = await createCollectionV1(umi, {
-    collection: collectionMintSigner,
+    collection: pledgesCollectionSigner,
     name: "Pledges Collection",
-    uri: collectionUri,
+    uri: pledgesCollectionUri,
   }).sendAndConfirm(umi);
   console.log(
-    `Create Pledges Collection signature: ${
+    `Create Pledges Collection (address: ${pledgesCollectionSigner.publicKey}) signature: ${
       base58.deserialize(createCollectionSignature.signature)[0]
     }`,
   );
@@ -82,7 +69,7 @@ export async function initializeCampaignCommand(
         { key: "status", value: "active" },
         {
           key: "pledgesCollectionAddress",
-          value: collectionMintSigner.publicKey,
+          value: pledgesCollectionSigner.publicKey,
         },
         { key: "totalPledges", value: "0" },
         { key: "refundedPledges", value: "0" },
