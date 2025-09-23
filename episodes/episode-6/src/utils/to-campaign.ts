@@ -23,12 +23,14 @@ export interface Campaign {
   currentlyDeposited: number;
   paymentOrders: { orderNumber: number; status: PaymentOrderStatus }[];
   pledgesCollectionAddress: string | null;
+  rewardsCollectionAddress: string | null;
+  rewardsCandyMachineAddress: string | null;
 }
 
 export function toCampaign(assetWithMetadata: AssetWithMetadata): Campaign {
   const campaignGoal =
     assetWithMetadata.metadata.attributes.find(
-      (attribute) => attribute.trait_type === "goal"
+      (attribute) => attribute.trait_type === "goal",
     )?.value || null;
 
   if (campaignGoal === null) {
@@ -37,7 +39,7 @@ export function toCampaign(assetWithMetadata: AssetWithMetadata): Campaign {
 
   const campaignBaseUnit =
     assetWithMetadata.metadata.attributes.find(
-      (attribute) => attribute.trait_type === "baseUnit"
+      (attribute) => attribute.trait_type === "baseUnit",
     )?.value || null;
 
   if (campaignBaseUnit === null) {
@@ -46,7 +48,7 @@ export function toCampaign(assetWithMetadata: AssetWithMetadata): Campaign {
 
   const campaignBasePrice =
     assetWithMetadata.metadata.attributes.find(
-      (attribute) => attribute.trait_type === "basePrice"
+      (attribute) => attribute.trait_type === "basePrice",
     )?.value || null;
 
   if (campaignBasePrice === null) {
@@ -55,7 +57,7 @@ export function toCampaign(assetWithMetadata: AssetWithMetadata): Campaign {
 
   const campaignBondingSlope =
     assetWithMetadata.metadata.attributes.find(
-      (attribute) => attribute.trait_type === "bondingSlope"
+      (attribute) => attribute.trait_type === "bondingSlope",
     )?.value || null;
 
   if (campaignBondingSlope === null) {
@@ -64,7 +66,7 @@ export function toCampaign(assetWithMetadata: AssetWithMetadata): Campaign {
 
   const campaignDurationMonths =
     assetWithMetadata.metadata.attributes.find(
-      (attribute) => attribute.trait_type === "durationMonths"
+      (attribute) => attribute.trait_type === "durationMonths",
     )?.value || null;
 
   if (campaignDurationMonths === null) {
@@ -73,7 +75,7 @@ export function toCampaign(assetWithMetadata: AssetWithMetadata): Campaign {
 
   const campaignCreatorWallet =
     assetWithMetadata.metadata.attributes.find(
-      (attribute) => attribute.trait_type === "creatorWallet"
+      (attribute) => attribute.trait_type === "creatorWallet",
     )?.value || null;
 
   if (campaignCreatorWallet === null) {
@@ -82,7 +84,7 @@ export function toCampaign(assetWithMetadata: AssetWithMetadata): Campaign {
 
   const campaignProjectStartDate =
     assetWithMetadata.metadata.attributes.find(
-      (attribute) => attribute.trait_type === "projectStartDate"
+      (attribute) => attribute.trait_type === "projectStartDate",
     )?.value || null;
 
   if (campaignProjectStartDate === null) {
@@ -91,7 +93,7 @@ export function toCampaign(assetWithMetadata: AssetWithMetadata): Campaign {
 
   const campaignTotalPledges =
     assetWithMetadata.attributes?.attributeList.find(
-      (attribute) => attribute.key === "totalPledges"
+      (attribute) => attribute.key === "totalPledges",
     )?.value || null;
 
   if (campaignTotalPledges === null) {
@@ -100,7 +102,7 @@ export function toCampaign(assetWithMetadata: AssetWithMetadata): Campaign {
 
   const campaignRefundedPledges =
     assetWithMetadata.attributes?.attributeList.find(
-      (attribute) => attribute.key === "refundedPledges"
+      (attribute) => attribute.key === "refundedPledges",
     )?.value || null;
 
   if (campaignRefundedPledges === null) {
@@ -109,7 +111,7 @@ export function toCampaign(assetWithMetadata: AssetWithMetadata): Campaign {
 
   const campaignTotalDeposited =
     assetWithMetadata.attributes?.attributeList.find(
-      (attribute) => attribute.key === "totalDeposited"
+      (attribute) => attribute.key === "totalDeposited",
     )?.value || null;
 
   if (campaignTotalDeposited === null) {
@@ -118,7 +120,7 @@ export function toCampaign(assetWithMetadata: AssetWithMetadata): Campaign {
 
   const campaignCurrentlyDeposited =
     assetWithMetadata.attributes?.attributeList.find(
-      (attribute) => attribute.key === "currentlyDeposited"
+      (attribute) => attribute.key === "currentlyDeposited",
     )?.value || null;
 
   if (campaignCurrentlyDeposited === null) {
@@ -127,7 +129,7 @@ export function toCampaign(assetWithMetadata: AssetWithMetadata): Campaign {
 
   const campaignStatus =
     assetWithMetadata.attributes?.attributeList.find(
-      (attribute) => attribute.key === "status"
+      (attribute) => attribute.key === "status",
     )?.value || null;
 
   if (campaignStatus === null) {
@@ -140,7 +142,7 @@ export function toCampaign(assetWithMetadata: AssetWithMetadata): Campaign {
 
   const campaignPaymentOrders =
     assetWithMetadata.attributes?.attributeList.filter((attribute) =>
-      attribute.key.includes("paymentOrder")
+      attribute.key.includes("paymentOrder"),
     ) || null;
 
   if (campaignPaymentOrders === null) {
@@ -149,7 +151,17 @@ export function toCampaign(assetWithMetadata: AssetWithMetadata): Campaign {
 
   const campaignPledgesCollectionAddress =
     assetWithMetadata.attributes?.attributeList.find(
-      (attribute) => attribute.key === "pledgesCollectionAddress"
+      (attribute) => attribute.key === "pledgesCollectionAddress",
+    )?.value || null;
+
+  const campaignRewardsCollectionAddress =
+    assetWithMetadata.attributes?.attributeList.find(
+      (attribute) => attribute.key === "rewardsCollectionAddress",
+    )?.value || null;
+
+  const campaignRewardsCandyMachineAddress =
+    assetWithMetadata.attributes?.attributeList.find(
+      (attribute) => attribute.key === "rewardsCandyMachineAddress",
     )?.value || null;
 
   return {
@@ -177,5 +189,7 @@ export function toCampaign(assetWithMetadata: AssetWithMetadata): Campaign {
       };
     }),
     pledgesCollectionAddress: campaignPledgesCollectionAddress,
+    rewardsCollectionAddress: campaignRewardsCollectionAddress,
+    rewardsCandyMachineAddress: campaignRewardsCandyMachineAddress,
   };
 }

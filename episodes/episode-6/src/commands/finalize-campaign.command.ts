@@ -177,6 +177,14 @@ export async function finalizeCampaignCommand(
           key: "pledgesCollectionAddress",
           value: publicKey(campaign.pledgesCollectionAddress),
         },
+        {
+          key: "rewardsCollectionAddress",
+          value: collectionMintSigner.publicKey,
+        },
+        {
+          key: "rewardsCandyMachineAddress",
+          value: candyMachineSigner.publicKey,
+        },
         { key: "totalPledges", value: campaign.totalPledges.toString() },
         { key: "refundedPledges", value: campaign.refundedPledges.toString() },
         {
