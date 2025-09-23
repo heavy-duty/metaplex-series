@@ -23,7 +23,7 @@ export interface CreateCampaignCommandOptions {
 }
 
 export async function createCampaignCommand(
-  options: CreateCampaignCommandOptions
+  options: CreateCampaignCommandOptions,
 ) {
   // Initialize UMI
   const umi = await getUmi(options.serverKeypair);
@@ -35,7 +35,7 @@ export async function createCampaignCommand(
   const campaignImagePath = path.join(
     __dirname,
     "../../assets",
-    "campaign-image.png"
+    "campaign-image.png",
   );
   const campaignImageBuffer = await readFile(campaignImagePath);
   const campaignImageFile = createGenericFile(
@@ -43,7 +43,7 @@ export async function createCampaignCommand(
     campaignImagePath,
     {
       contentType: "image/png",
-    }
+    },
   );
   const [campaignImage] = await umi.uploader.upload([campaignImageFile]);
 
@@ -74,7 +74,7 @@ export async function createCampaignCommand(
   const paymentOrders = calculatePaymentOrders(
     durationMonths,
     goal,
-    projectStartDate
+    projectStartDate,
   );
 
   // Create a Campaign NFT using Core
@@ -104,6 +104,6 @@ export async function createCampaignCommand(
   console.log(
     `Create Campaign NFT (address: ${assetSigner.publicKey}) signature: ${
       base58.deserialize(createCampaignSignature.signature)[0]
-    }`
+    }`,
   );
 }

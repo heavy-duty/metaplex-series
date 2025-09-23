@@ -31,7 +31,7 @@ export interface RefundCampaignCommandOptions {
 }
 
 export async function refundCampaignCommand(
-  options: RefundCampaignCommandOptions
+  options: RefundCampaignCommandOptions,
 ) {
   // Initialize UMI
   const umi = await getUmi(options.serverKeypair);
@@ -80,19 +80,19 @@ export async function refundCampaignCommand(
   console.log(
     `Transfer SOL signature: ${
       base58.deserialize(transferSolSignature.signature)[0]
-    }`
+    }`,
   );
 
   // Fetch the pledge collection
   const collection = await fetchCollection(
     umi,
-    publicKey(campaign.pledgesCollectionAddress)
+    publicKey(campaign.pledgesCollectionAddress),
   );
 
   // Fetch the pledge asset
   const pledgeAsset = await fetchAssetV1(
     umi,
-    publicKey(options.pledgeAssetAddress)
+    publicKey(options.pledgeAssetAddress),
   );
 
   // Burn the pledge NFT
@@ -104,7 +104,7 @@ export async function refundCampaignCommand(
   console.log(
     `Burn Pledge signature: ${
       base58.deserialize(burnPledgeSignature.signature)[0]
-    }`
+    }`,
   );
 
   // Update campaign attributes
@@ -141,6 +141,6 @@ export async function refundCampaignCommand(
   console.log(
     `Update Campaign signature: ${
       base58.deserialize(updateCampaignSignature.signature)[0]
-    }`
+    }`,
   );
 }

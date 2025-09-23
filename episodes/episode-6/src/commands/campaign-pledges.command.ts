@@ -16,7 +16,7 @@ export interface CampaignPledgesCommandOptions {
 }
 
 export async function campaignPledgesCommand(
-  options: CampaignPledgesCommandOptions
+  options: CampaignPledgesCommandOptions,
 ) {
   // Initialize UMI
   const umi = await getUmi(options.serverKeypair);
@@ -36,11 +36,11 @@ export async function campaignPledgesCommand(
 
   const pledgeNfts = await fetchAssetsByCollection(
     umi,
-    publicKey(campaign.pledgesCollectionAddress)
+    publicKey(campaign.pledgesCollectionAddress),
   );
   const backerKeypair = await readKeypairFromFile(umi, options.backerKeypair);
   const myPledgeNfts = pledgeNfts.filter(
-    (pledgeNft) => pledgeNft.owner === backerKeypair.publicKey
+    (pledgeNft) => pledgeNft.owner === backerKeypair.publicKey,
   );
 
   myPledgeNfts.forEach((pledgeNft) => {

@@ -31,7 +31,7 @@ export interface PledgeCampaignCommandOptions {
 }
 
 export async function pledgeCampaignCommand(
-  options: PledgeCampaignCommandOptions
+  options: PledgeCampaignCommandOptions,
 ) {
   // Initialize UMI
   const umi = await getUmi(options.serverKeypair);
@@ -67,14 +67,14 @@ export async function pledgeCampaignCommand(
   console.log(
     `Transfer SOL signature: ${
       base58.deserialize(transferSolSignature.signature)[0]
-    }`
+    }`,
   );
 
   // Upload pledge image
   const pledgeImagePath = path.join(
     __dirname,
     "../../assets",
-    "pledge-image.png"
+    "pledge-image.png",
   );
   const pledgeImageBuffer = await readFile(pledgeImagePath);
   const pledgeImageFile = createGenericFile(
@@ -82,7 +82,7 @@ export async function pledgeCampaignCommand(
     pledgeImagePath,
     {
       contentType: "image/png",
-    }
+    },
   );
   const [pledgeImage] = await umi.uploader.upload([pledgeImageFile]);
 
@@ -97,7 +97,7 @@ export async function pledgeCampaignCommand(
   // Send transaction to mint the pledge NFT
   const collection = await fetchCollection(
     umi,
-    publicKey(campaign.pledgesCollectionAddress)
+    publicKey(campaign.pledgesCollectionAddress),
   );
   const pledgeSigner = generateSigner(umi);
   const createPledgeSignature = await createCoreNft(umi, {
@@ -110,7 +110,7 @@ export async function pledgeCampaignCommand(
   console.log(
     `Create Pledge (address: ${pledgeSigner.publicKey}) signature: ${
       base58.deserialize(createPledgeSignature.signature)[0]
-    }`
+    }`,
   );
 
   // Update campaign attributes
@@ -144,6 +144,6 @@ export async function pledgeCampaignCommand(
   console.log(
     `Update Campaign signature: ${
       base58.deserialize(updateCampaignSignature.signature)[0]
-    }`
+    }`,
   );
 }

@@ -27,7 +27,7 @@ export interface WithdrawCampaignCommandOptions {
 }
 
 export async function withdrawCampaignCommand(
-  options: WithdrawCampaignCommandOptions
+  options: WithdrawCampaignCommandOptions,
 ) {
   // Initialize UMI
   const umi = await getUmi(options.serverKeypair);
@@ -53,7 +53,7 @@ export async function withdrawCampaignCommand(
   const paymentOrders = calculatePaymentOrders(
     campaign.durationMonths,
     campaign.goal,
-    campaign.projectStartDate
+    campaign.projectStartDate,
   );
 
   // Calculate the monthly payout amount
@@ -64,7 +64,7 @@ export async function withdrawCampaignCommand(
   const dueUnclaimedOrders = paymentOrders.filter(
     (order) =>
       order.status === "unclaimed" &&
-      new Date(order.dueTimestamp) <= currentDate
+      new Date(order.dueTimestamp) <= currentDate,
   );
 
   // Create a noop signer for the campaign asset's signer PDA
@@ -77,7 +77,7 @@ export async function withdrawCampaignCommand(
   for (const order of dueUnclaimedOrders) {
     if (campaign.currentlyDeposited < monthlyPayout) {
       throw new Error(
-        "There are not enough funds to claim this payment order."
+        "There are not enough funds to claim this payment order.",
       );
     }
 
@@ -97,7 +97,7 @@ export async function withdrawCampaignCommand(
     console.log(
       `Transfer SOL for payment order ${order.monthIndex + 1} signature: ${
         base58.deserialize(transferSolSignature.signature)[0]
-      }`
+      }`,
     );
 
     // Update campaign attributes
@@ -139,7 +139,7 @@ export async function withdrawCampaignCommand(
         order.monthIndex + 1
       }, new currentlyDeposited: ${
         campaign.currentlyDeposited - monthlyPayout
-      } signature: ${base58.deserialize(updateCampaignSignature.signature)[0]}`
+      } signature: ${base58.deserialize(updateCampaignSignature.signature)[0]}`,
     );
   }
 }
