@@ -1,4 +1,5 @@
 export * from "./campaign-pledges.command";
+export * from "./campaign-rewards.command";
 export * from "./campaign.command";
 export * from "./claim-campaign.command";
 export * from "./create-campaign.command";

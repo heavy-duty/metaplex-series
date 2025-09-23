@@ -7,6 +7,7 @@ import { Command } from "commander";
 import {
   campaignCommand,
   campaignPledgesCommand,
+  campaignRewardsCommand,
   claimCampaignCommand,
   createCampaignCommand,
   finalizeCampaignCommand,
@@ -158,6 +159,17 @@ program
   .requiredOption("--backerKeypair <path>", "Backer's keypair path")
   .requiredOption("--pledgeAssetAddress <string>", "Address of the Pledge NFT")
   .action(createCommand(claimCampaignCommand));
+
+// Command: campaign-rewards
+program
+  .command("campaign-rewards")
+  .description("Queries campaign rewards for the backer")
+  .requiredOption(
+    "--campaignAssetAddress <string>",
+    "Address of the Campaign NFT",
+  )
+  .requiredOption("--backerKeypair <path>", "Backer's keypair path")
+  .action(createCommand(campaignRewardsCommand));
 
 // Parse command-line arguments
 program.parse(process.argv);
