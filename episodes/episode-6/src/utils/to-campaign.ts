@@ -135,9 +135,17 @@ export function toCampaign(assetWithMetadata: AssetWithMetadata): Campaign {
   }
 
   const campaignPaymentOrders =
-    assetWithMetadata.attributes?.attributeList.filter((attribute) =>
-      attribute.key.includes("paymentOrder"),
-    ) || null;
+    assetWithMetadata.attributes?.attributeList
+      .filter((attribute) => attribute.key.includes("paymentOrder"))
+      .map((attribute) => {
+        const orderNumber = attribute.key.split("_")[1];
+        return {
+          orderNumber: parseInt(orderNumber, 10),
+          status: attribute.value as PaymentOrderStatus,
+        };
+      }) || null;
+
+  campaignPaymentOrders?.sort((a, b) => a.orderNumber - b.orderNumber);
 
   if (campaignPaymentOrders === null) {
     throw new Error("Campaign is missing payment orders");
@@ -174,13 +182,7 @@ export function toCampaign(assetWithMetadata: AssetWithMetadata): Campaign {
     totalDeposited: parseInt(campaignTotalDeposited, 10),
     currentlyDeposited: parseInt(campaignCurrentlyDeposited, 10),
     status: campaignStatus,
-    paymentOrders: campaignPaymentOrders.map((attribute) => {
-      const orderNumber = attribute.key.split("_")[1];
-      return {
-        orderNumber: parseInt(orderNumber, 10),
-        status: attribute.value as PaymentOrderStatus,
-      };
-    }),
+    paymentOrders: campaignPaymentOrders,
     pledgesCollectionAddress: campaignPledgesCollectionAddress,
     rewardsCollectionAddress: campaignRewardsCollectionAddress,
     rewardsCandyMachineAddress: campaignRewardsCandyMachineAddress,

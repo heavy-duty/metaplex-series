@@ -4,7 +4,10 @@ export function calculatePaymentOrders(
   durationMonths: number,
   total: number,
   startDate: Date,
-  paymentOrders: { orderNumber: number; status: "unclaimed" | "claimed" }[] = []
+  paymentOrders: {
+    orderNumber: number;
+    status: "unclaimed" | "claimed";
+  }[] = [],
 ) {
   const monthlyAmount = Math.floor(total / durationMonths);
   const targetDay = getDate(startDate);
@@ -13,6 +16,7 @@ export function calculatePaymentOrders(
     monthIndex: number;
     dueTimestamp: number;
     amount: number;
+    orderNumber: number;
     status: "unclaimed" | "claimed";
   }[] = [];
 
@@ -28,14 +32,16 @@ export function calculatePaymentOrders(
 
     // Find matching payment order status or default to "unclaimed"
     const existingOrder = paymentOrders.find(
-      (order) => order.orderNumber === i
+      (order) => order.orderNumber === i + 1,
     );
     const status = existingOrder ? existingOrder.status : "unclaimed";
+    const orderNumber = existingOrder ? existingOrder.orderNumber : i + 1;
 
     result.push({
       monthIndex: i,
       dueTimestamp,
       amount: monthlyAmount,
+      orderNumber,
       status,
     });
   }

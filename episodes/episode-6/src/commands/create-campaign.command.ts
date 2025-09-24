@@ -85,8 +85,8 @@ export async function createCampaignCommand(
           { key: "refundedPledges", value: "0" },
           { key: "totalDeposited", value: "0" },
           { key: "currentlyDeposited", value: "0" },
-          ...paymentOrders.map((paymentOrder, index) => ({
-            key: `paymentOrder_${index + 1}`,
+          ...paymentOrders.map((paymentOrder) => ({
+            key: `paymentOrder_${paymentOrder.orderNumber}`,
             value: paymentOrder.status,
           })),
         ],

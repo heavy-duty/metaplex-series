@@ -123,12 +123,16 @@ program
 // Command: withdraw-campaign
 program
   .command("withdraw-campaign")
-  .description("Batch-claims eligible payment orders post-projectStartDate")
+  .description("Claims eligible payment orders post-projectStartDate")
   .requiredOption(
     "--campaignAssetAddress <string>",
     "Address of the Campaign NFT",
   )
   .requiredOption("--creatorKeypair <path>", "Creator's keypair path")
+  .requiredOption(
+    "--orderNumber <number>",
+    "Number of the order to withdraw from",
+  )
   .action(createCommand(withdrawCampaignCommand));
 
 // Command: finalize-campaign
