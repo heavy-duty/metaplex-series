@@ -1,20 +1,12 @@
 import {
-  createV1,
-  mintV1,
+  createNft,
   mplTokenMetadata,
-  TokenStandard,
 } from "@metaplex-foundation/mpl-token-metadata";
-import {
-  createTokenIfMissing,
-  getSplAssociatedTokenProgramId,
-  mplToolbox,
-} from "@metaplex-foundation/mpl-toolbox";
 import {
   createGenericFile,
   generateSigner,
   keypairIdentity,
   percentAmount,
-  publicKey,
 } from "@metaplex-foundation/umi";
 import { createUmi } from "@metaplex-foundation/umi-bundle-defaults";
 import { irysUploader } from "@metaplex-foundation/umi-uploader-irys";
@@ -45,14 +37,11 @@ async function main() {
   // Register token metadata program
   umi = umi.use(mplTokenMetadata());
 
-  // Register the Metaplex toolbox
-  umi = umi.use(mplToolbox());
-
   // Register Irys as the uploader
   umi = umi.use(
     irysUploader({
       address: "https://devnet.irys.xyz",
-    })
+    }),
   );
 
   // Upload image to Irys
@@ -73,41 +62,14 @@ async function main() {
 
   // Create the NFT
   const mintSigner = generateSigner(umi);
-  const createSignature = await createV1(umi, {
+  const createSignature = await createNft(umi, {
     mint: mintSigner,
     name: "Mi NFT",
     uri,
     sellerFeeBasisPoints: percentAmount(0),
-    tokenStandard: TokenStandard.NonFungible,
   }).sendAndConfirm(umi);
   console.log(
-    `Create signature: ${base58.deserialize(createSignature.signature)[0]}`
-  );
-
-  // Create ATA of the receiver
-  const createAssociatedTokenAccountSignature = await createTokenIfMissing(
-    umi,
-    {
-      mint: mintSigner.publicKey,
-      owner: publicKey("8r8dZAgfEicf6KXoSC5xV64S4Wm2RWpq8kfaxKxKJThP"),
-      ataProgram: getSplAssociatedTokenProgramId(umi),
-    }
-  ).sendAndConfirm(umi);
-  console.log(
-    `Create ATA signature: ${
-      base58.deserialize(createAssociatedTokenAccountSignature.signature)[0]
-    }`
-  );
-
-  // Mint the NFT to a wallet
-  const mintSignature = await mintV1(umi, {
-    mint: mintSigner.publicKey,
-    amount: 1,
-    tokenOwner: publicKey("8r8dZAgfEicf6KXoSC5xV64S4Wm2RWpq8kfaxKxKJThP"),
-    tokenStandard: TokenStandard.NonFungible,
-  }).sendAndConfirm(umi);
-  console.log(
-    `Mint signature: ${base58.deserialize(mintSignature.signature)[0]}`
+    `Create signature: ${base58.deserialize(createSignature.signature)[0]}`,
   );
 }
 
