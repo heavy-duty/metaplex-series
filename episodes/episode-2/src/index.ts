@@ -56,14 +56,14 @@ async function main() {
   umi = umi.use(
     irysUploader({
       address: "https://devnet.irys.xyz",
-    })
+    }),
   );
 
   // Upload non-fungible image to Irys
   const nonFungibleImagePath = path.join(
     __dirname,
     "../assets",
-    "non-fungible-image.png"
+    "non-fungible-image.png",
   );
   const nonFungibleImageBuffer = await readFile(nonFungibleImagePath);
   const nonFungibleImageFile = createGenericFile(
@@ -71,7 +71,7 @@ async function main() {
     nonFungibleImagePath,
     {
       contentType: "image/png",
-    }
+    },
   );
   const [nonFungibleImage] = await umi.uploader.upload([nonFungibleImageFile]);
 
@@ -79,7 +79,7 @@ async function main() {
   const nonFungibleUri = await umi.uploader.uploadJson({
     name: "No Fungible",
     symbol: "NFUNG",
-    description: "Este es mi segundo no fungible de Metaplex",
+    description: "Este un token no fungible de Metaplex",
     image: nonFungibleImage,
   });
 
@@ -95,14 +95,14 @@ async function main() {
   console.log(
     `Create non-fungible signature: ${
       base58.deserialize(createNonFungibleSignature.signature)[0]
-    }`
+    }`,
   );
 
   // Upload fungible image to Irys
   const fungibleImagePath = path.join(
     __dirname,
     "../assets",
-    "fungible-image.png"
+    "fungible-image.png",
   );
   const fungibleImageBuffer = await readFile(fungibleImagePath);
   const fungibleImageFile = createGenericFile(
@@ -110,7 +110,7 @@ async function main() {
     fungibleImagePath,
     {
       contentType: "image/png",
-    }
+    },
   );
   const [fungibleImage] = await umi.uploader.upload([fungibleImageFile]);
 
@@ -118,7 +118,7 @@ async function main() {
   const fungibleUri = await umi.uploader.uploadJson({
     name: "Fungible",
     symbol: "FUNG",
-    description: "Este es mi primer fungible de Metaplex",
+    description: "Este es un token fungible de Metaplex",
     image: fungibleImage,
   });
 
@@ -134,7 +134,7 @@ async function main() {
   console.log(
     `Create fungible signature: ${
       base58.deserialize(createFungibleSignature.signature)[0]
-    }`
+    }`,
   );
 
   // Create ATA of the receiver of the fungible
@@ -147,9 +147,9 @@ async function main() {
   console.log(
     `Create fungible ATA signature: ${
       base58.deserialize(
-        createFungibleAssociatedTokenAccountSignature.signature
+        createFungibleAssociatedTokenAccountSignature.signature,
       )[0]
-    }`
+    }`,
   );
 
   // Mint the NFT to a wallet
@@ -162,94 +162,94 @@ async function main() {
   console.log(
     `Mint fungible signature: ${
       base58.deserialize(mintFungibleSignature.signature)[0]
-    }`
+    }`,
   );
 
-  // Upload fungible asset image to Irys
-  const fungibleAssetImagePath = path.join(
+  // Upload semi fungible image to Irys
+  const semiFungibleImagePath = path.join(
     __dirname,
     "../assets",
-    "fungible-asset-image.png"
+    "fungible-asset-image.png",
   );
-  const fungibleAssetImageBuffer = await readFile(fungibleAssetImagePath);
-  const fungibleAssetImageFile = createGenericFile(
-    fungibleAssetImageBuffer,
-    fungibleAssetImagePath,
+  const semiFungibleImageBuffer = await readFile(semiFungibleImagePath);
+  const semiFungibleImageFile = createGenericFile(
+    semiFungibleImageBuffer,
+    semiFungibleImagePath,
     {
       contentType: "image/png",
-    }
+    },
   );
-  const [fungibleAssetImage] = await umi.uploader.upload([
-    fungibleAssetImageFile,
+  const [semiFungibleImage] = await umi.uploader.upload([
+    semiFungibleImageFile,
   ]);
 
-  // Upload fungible asset metadata to Irys
-  const fungibleAssetUri = await umi.uploader.uploadJson({
-    name: "Asset Fungible",
-    symbol: "FUNGA",
-    description: "Este es mi primer asset fungible de Metaplex",
-    image: fungibleAssetImage,
+  // Upload semi fungible metadata to Irys
+  const semiFungibleUri = await umi.uploader.uploadJson({
+    name: "Semi Fungible",
+    symbol: "SFUNG",
+    description: "Este es token semi fungible de Metaplex",
+    image: semiFungibleImage,
     attributes: [{ trait_type: "Es un asset", value: "SI" }],
   });
 
-  // Create the fungible asset on-chain
-  const fungibleAssetMintSigner = generateSigner(umi);
+  // Create the semi fungible on-chain
+  const semiFungibleMintSigner = generateSigner(umi);
   const createFungibleAssetSignature = await createFungibleAsset(umi, {
-    mint: fungibleAssetMintSigner,
+    mint: semiFungibleMintSigner,
     name: "Mi asset fungible",
-    uri: fungibleAssetUri,
+    uri: semiFungibleUri,
     sellerFeeBasisPoints: percentAmount(0),
     decimals: some(6),
   }).sendAndConfirm(umi);
   console.log(
-    `Create fungible asset signature: ${
+    `Create semi fungible signature: ${
       base58.deserialize(createFungibleAssetSignature.signature)[0]
-    }`
+    }`,
   );
 
-  // Create ATA of the receiver of the fungible asset
+  // Create ATA of the receiver of the semi fungible
   const createFungibleAssetAssociatedTokenAccountSignature =
     await createTokenIfMissing(umi, {
-      mint: fungibleAssetMintSigner.publicKey,
+      mint: semiFungibleMintSigner.publicKey,
       owner: publicKey("8r8dZAgfEicf6KXoSC5xV64S4Wm2RWpq8kfaxKxKJThP"),
       ataProgram: getSplAssociatedTokenProgramId(umi),
     }).sendAndConfirm(umi);
   console.log(
-    `Create fungible asset ATA signature: ${
+    `Create semi fungible ATA signature: ${
       base58.deserialize(
-        createFungibleAssetAssociatedTokenAccountSignature.signature
+        createFungibleAssetAssociatedTokenAccountSignature.signature,
       )[0]
-    }`
+    }`,
   );
 
-  // Mint the fungible asset to a wallet
+  // Mint the semi fungible to a wallet
   const mintFungibleAssetSignature = await mintV1(umi, {
-    mint: fungibleAssetMintSigner.publicKey,
+    mint: semiFungibleMintSigner.publicKey,
     amount: 1,
     tokenOwner: publicKey("8r8dZAgfEicf6KXoSC5xV64S4Wm2RWpq8kfaxKxKJThP"),
     tokenStandard: TokenStandard.FungibleAsset,
   }).sendAndConfirm(umi);
   console.log(
-    `Mint fungible asset signature: ${
+    `Mint semi fungible signature: ${
       base58.deserialize(mintFungibleAssetSignature.signature)[0]
-    }`
+    }`,
   );
 
   // Upload programmable non-fungible image to Irys
   const programmableNonFungibleImagePath = path.join(
     __dirname,
     "../assets",
-    "programmable-non-fungible-image.png"
+    "programmable-non-fungible-image.png",
   );
   const programmableNonFungibleImageBuffer = await readFile(
-    programmableNonFungibleImagePath
+    programmableNonFungibleImagePath,
   );
   const programmableNonFungibleImageFile = createGenericFile(
     programmableNonFungibleImageBuffer,
     programmableNonFungibleImagePath,
     {
       contentType: "image/png",
-    }
+    },
   );
   const [programmableNonFungibleImage] = await umi.uploader.upload([
     programmableNonFungibleImageFile,
@@ -259,7 +259,7 @@ async function main() {
   const programmableNonFungibleUri = await umi.uploader.uploadJson({
     name: "No Fungible Programable",
     symbol: "PNFUNG",
-    description: "Este es mi primer no fungible programable de Metaplex",
+    description: "Este es un token no fungible programable de Metaplex",
     image: programmableNonFungibleImage,
   });
 
@@ -273,12 +273,12 @@ async function main() {
       uri: programmableNonFungibleUri,
       sellerFeeBasisPoints: percentAmount(0),
       tokenOwner: publicKey("8r8dZAgfEicf6KXoSC5xV64S4Wm2RWpq8kfaxKxKJThP"),
-    }
+    },
   ).sendAndConfirm(umi);
   console.log(
     `Create programmable non-fungible signature: ${
       base58.deserialize(createProgrammableNonFungibleSignature.signature)[0]
-    }`
+    }`,
   );
 }
 
