@@ -1,5 +1,5 @@
 {
-  "name": "metaplex-series-episode-3",
+  "name": "metaplex-series-nft-collections",
   "version": "1.0.0",
   "main": "dist/index.js",
   "scripts": {
@@ -9,7 +9,7 @@
   },
   "author": "",
   "license": "ISC",
-  "description": "Episode #3 of the Metaplex series",
+  "description": "Exploring the NFT collections from Metaplex",
   "devDependencies": {
     "@types/node": "^20.12.7",
     "nodemon": "^3.1.10",
