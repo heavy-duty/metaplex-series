@@ -1,23 +1,19 @@
-Episode 1: Token Metadata
-Hook: Imagine a plain cardboard box. You can see its size and weight, but you have no idea what’s inside unless you open it. Tokens on a blockchain are similar: they have basic info like supply, but without metadata, you’re left guessing their purpose. Metadata is like slapping a sticker on the box with a name, description, and image, so everyone knows what it represents without digging deeper.Props: Use a plain cardboard box to show the "unknown" token. Then, add a sticker with text (e.g., “Art Collectible, Limited Edition, Image: Starry Night”) to represent metadata.Explanation: We’ll show how Metaplex’s Token Metadata program adds rich details (name, description, image) to tokens, making them more useful for applications like NFTs. Then, we’ll present the code to create and attach metadata to a token.
+# Metaplex Series
 
-Episode 2: Token Standards
-Hook: Think of tokens as wooden cubes in a craft store. Some are identical, others have unique designs, and some come in special sets with specific rules. Metaplex supports multiple token types—fungible, non-fungible, semi-fungible, and programmable—each serving different purposes.Props: Use wooden cubes to represent tokens. Show a pile of identical cubes for fungible tokens, 2-3 cubes with unique designs for non-fungible tokens (NFTs), a box with ~10 green-painted cubes for semi-fungible tokens, and a box labeled “Only usable by Alice” for programmable NFTs.Explanation: We’ll explain the differences: fungible tokens (like currency), non-fungible (unique NFTs), semi-fungible (limited editions), and programmable (with custom rules). Then, we’ll show the code to create each type using Metaplex.
+This repository was created for the purpose of explaining how to interact with Metaplex protocols in Solana. We go from how tokens work and what's an NFT to creating collections and candy machines, finishing with a demo project that covers all the concepts learned throughout the program.
 
-Episode 3: Candy Machine
-Hook: Picture a classic candy machine at an arcade. You drop in a chip, turn the knob, and out pops a random treat. Metaplex’s Candy Machine works the same way for NFTs, ensuring a fair and fun way to distribute them during a project’s fundraising.Props: Use the toy candy machine filled with wooden spheres (representing NFTs). Insert a chip, turn the knob, and show a random sphere popping out.Explanation: We’ll describe how the Candy Machine creates a predefined set of NFTs, where buyers pay a set amount and receive a random NFT. Then, we’ll walk through the code to set up a Candy Machine.
+The series is divided in 5 sessions:
 
-Episode 4: Core
-Hook: NFTs on Solana are affordable, but when you’re minting thousands, costs can stack up like knocking over a tower of blocks. Metaplex Core is designed to keep those costs as low as possible, even at scale.Props: Set up a stack of lightweight objects (e.g., plastic cups). Toss a single wooden cube to show it barely affects the stack (low cost for one NFT). Then, throw a whole box of cubes to knock it down (high cost at scale). Contrast this with a smaller box of cubes to represent Core’s efficiency.Explanation: We’ll explain how the Core NFT program minimizes transaction costs for large-scale minting. Then, we’ll show the code for creating Core NFTs.
+- Tokens and NFTs
+- Collections and Candy machines
+- Designing apps with Metaplex protocols
+- Hands-on Part I
+- Hands-on Part II
 
-Episode 5: Core Candy Machine
-Hook: The Candy Machine from Episode 3 got an upgrade. The Core Candy Machine is like the “v2” model—same fun, random NFT distribution, but optimized for Core NFTs to keep costs low.Props: Use the same toy candy machine from Episode 3, but add a “v2” sticker. Insert a chip and dispense a wooden sphere to show it works the same but for Core NFTs.Explanation: We’ll cover how the Core Candy Machine was rebuilt for Core NFTs, maintaining the same fair distribution model. Then, we’ll dive into the code to set it up.
+## Disclaimer
 
-Episode 6: Create and Initialize Campaigns
-Hook: Crowdfunding is like starting with an empty glass jar labeled for your dream project. You need to set it up so people can toss in their support to make it real.Props: Use an empty glass jar with a paper strip labeled “Art Project” to represent the campaign. Show a plain lid, then swap it for one with a slot to symbolize enabling deposits. Add some wooden cubes (representing money) to show the jar becoming a “piggy bank.”Explanation: We’ll explain how to create and initialize a crowdfunding campaign in Metaplex, setting up a pot for contributions. Then, we’ll show the code to initialize a campaign.
+The code shown here is for educational purposes. Use it in production at your own risk.
 
-Episode 7: Pledge, Refund, and Withdraw Campaigns
-Hook: Now that the jar is ready, it’s time for people to chip in. Supporters deposit money and get a chip as a voucher, but they can return it for a refund, or the creator can collect the funds to start the project.Props: Use the jar from Episode 6. Drop wooden cubes (money) into the jar and hand out chips (as vouchers) to represent pledges. Show someone returning a chip to get their cubes back (refund). Finally, have the creator pull cubes out of the jar (withdraw).Explanation: We’ll cover how pledges work, how refunds are processed using chips, and how creators withdraw funds. Then, we’ll show the code for these actions.
+## Credits
 
-Episode 8: Finalize and Claim Campaigns
-Hook: The campaign’s done, the jar’s full, and now it’s time to reward supporters with exclusive NFTs. Think of it as using your chips to get prizes from our trusty candy machine.Props: Use the jar from Episodes 6-7 to show the campaign’s end. Then, bring back the toy candy machine (from Episode 3 or 5). Supporters hand over their chips (vouchers), insert one into the machine, and get a random wooden sphere (NFT reward).Explanation: We’ll explain how to finalize a campaign and distribute rewards via the Candy Machine. Supporters claim their NFTs using their chips. Then, we’ll show the code to finalize and claim.
+This program was created thanks to La Familia and Solana Foundation support. It was made with <3 by Heavy Duty Builders.
