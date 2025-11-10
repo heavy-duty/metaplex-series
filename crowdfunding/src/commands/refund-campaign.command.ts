@@ -10,8 +10,8 @@ import { transferSol } from "@metaplex-foundation/mpl-toolbox";
 import {
   createNoopSigner,
   createSignerFromKeypair,
-  lamports,
   publicKey,
+  sol,
 } from "@metaplex-foundation/umi";
 import { base58 } from "@metaplex-foundation/umi/serializers";
 import {
@@ -33,65 +33,44 @@ export interface RefundCampaignCommandOptions {
 export async function refundCampaignCommand(
   options: RefundCampaignCommandOptions,
 ) {
-  // Initialize UMI
+  // Inicializamos Umi
   const umi = await getUmi(options.serverKeypair);
 
-  // Read the backer keypair
+  // Leemos el keypair del backer
   const backerKeypair = await readKeypairFromFile(umi, options.backerKeypair);
 
-  // Fetch the campaign asset with its metadata
+  // Obtenemos el NFT de la campaña con su metadata
   const campaignAssetWithMetadata = await fetchAssetWithMetadata({
     serverKeypair: options.serverKeypair,
     campaignAssetAddress: options.campaignAssetAddress,
   });
 
-  // Transform asset with metadata into campaign
+  // Transformamos el NFT de la campaña en un objeto de tipo campaña
   const campaign = toCampaign(campaignAssetWithMetadata);
 
-  if (!campaign.pledgesCollectionAddress) {
-    throw new Error("Pledges collection address is missing.");
+  // Validamos que la campaña este activa
+  if (campaign.status !== "active") {
+    throw new Error("Only active campaigns can have refunds");
   }
 
-  // Fetch pledge asset and validate owner
+  // Obtenemos el NFT del pledge
   const pledgeAsset = await fetchAssetV1(
     umi,
     publicKey(options.pledgeAssetAddress),
   );
 
+  // Validamos que el owner del NFT del pledge coincide con el keypair del backer dado
   if (pledgeAsset.owner !== backerKeypair.publicKey) {
     throw new Error("You are not authorized to refund with this pledge");
   }
 
-  // Handle refund transfer
-  const netPledgeSupply = campaign.totalPledges - campaign.refundedPledges;
-  const currentPledgePrice =
-    campaign.basePrice + (netPledgeSupply - 1) * campaign.bondingSlope;
-  const refundAmount = lamports(currentPledgePrice);
-  const campaignAssetSignerPda = findAssetSignerPda(umi, {
-    asset: publicKey(campaign.address),
-  });
-  const campaignAssetSigner = createNoopSigner(campaignAssetSignerPda[0]);
-  const transferSolSignature = await execute(umi, {
-    asset: campaignAssetWithMetadata,
-    instructions: transferSol(umi, {
-      amount: refundAmount,
-      source: campaignAssetSigner,
-      destination: backerKeypair.publicKey,
-    }).getInstructions(),
-    payer: umi.identity,
-    assetSigner: campaignAssetSignerPda,
-  }).sendAndConfirm(umi);
-  console.log(
-    `Transfer ${Number(refundAmount.basisPoints) / Math.pow(10, refundAmount.decimals)} SOL (to address: ${backerKeypair.publicKey}) signature: ${
-      base58.deserialize(transferSolSignature.signature)[0]
-    }`,
-  );
-
-  // Burn the pledge NFT
+  // Obtenemos la coleccion de pledges
   const pledgesCollection = await fetchCollection(
     umi,
     publicKey(campaign.pledgesCollectionAddress),
   );
+
+  // Quemamos el NFT del pledge
   const burnPledgeSignature = await burn(umi, {
     asset: pledgeAsset,
     collection: pledgesCollection,
@@ -103,7 +82,32 @@ export async function refundCampaignCommand(
     }`,
   );
 
-  // Update campaign attributes
+  // Buscamos la direccion del asset signer de la campaña
+  const campaignAssetSignerPda = findAssetSignerPda(umi, {
+    asset: publicKey(campaign.address),
+  });
+
+  // Creamos un signer que no firme para el asset signer
+  const campaignAssetSigner = createNoopSigner(campaignAssetSignerPda[0]);
+
+  // Transferimos del asset signer al backer
+  const transferSolSignature = await execute(umi, {
+    asset: campaignAssetWithMetadata,
+    instructions: transferSol(umi, {
+      amount: sol(0.001),
+      source: campaignAssetSigner,
+      destination: backerKeypair.publicKey,
+    }).getInstructions(),
+    payer: umi.identity,
+    assetSigner: campaignAssetSignerPda,
+  }).sendAndConfirm(umi);
+  console.log(
+    `Transfer 0.001 SOL (to address: ${backerKeypair.publicKey}) signature: ${
+      base58.deserialize(transferSolSignature.signature)[0]
+    }`,
+  );
+
+  // Actualizamos los pledges reembolsados en la campaña
   const updateCampaignSignature = await updatePlugin(umi, {
     asset: publicKey(options.campaignAssetAddress),
     plugin: {
@@ -119,18 +123,6 @@ export async function refundCampaignCommand(
           key: "refundedPledges",
           value: (campaign.refundedPledges + 1).toString(),
         },
-        {
-          key: "totalDeposited",
-          value: campaign.totalDeposited.toString(),
-        },
-        {
-          key: "currentlyDeposited",
-          value: (campaign.currentlyDeposited - currentPledgePrice).toString(),
-        },
-        ...campaign.paymentOrders.map((paymentOrder) => ({
-          key: `paymentOrder_${paymentOrder.orderNumber}`,
-          value: paymentOrder.status,
-        })),
       ],
     },
   }).sendAndConfirm(umi);

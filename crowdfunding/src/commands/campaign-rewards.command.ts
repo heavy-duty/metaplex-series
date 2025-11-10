@@ -18,31 +18,38 @@ export interface CampaignRewardsCommandOptions {
 export async function campaignRewardsCommand(
   options: CampaignRewardsCommandOptions,
 ) {
-  // Initialize UMI
+  // Inicializamos umi
   const umi = await getUmi(options.serverKeypair);
 
-  // Fetch the asset with metadata
+  // Obtenemos el NFT de la campaña con su metadata
   const campaignAssetWithMetadata = await fetchAssetWithMetadata({
     campaignAssetAddress: options.campaignAssetAddress,
     serverKeypair: options.serverKeypair,
   });
 
-  // Transform asset with metadata into campaign
+  // Transformamos el NFT de la campaña en un objeto tipo campaña
   const campaign = toCampaign(campaignAssetWithMetadata);
 
-  if (!campaign.rewardsCollectionAddress) {
-    throw new Error("Campaign has no rewards collection address.");
+  // Validamos que el estado sea "finalized"
+  if (campaign.status !== "finalized") {
+    throw new Error("Only finalized campaigns have rewards");
   }
 
+  // Obtenemos todos los rewards asociados a la campaña
   const rewardNfts = await fetchAssetsByCollection(
     umi,
     publicKey(campaign.rewardsCollectionAddress),
   );
+
+  // Leemos el keypair del backer
   const backerKeypair = await readKeypairFromFile(umi, options.backerKeypair);
+
+  // Filtramos los rewards usando la direccion del backer
   const myRewardNfts = rewardNfts.filter(
     (rewardNft) => rewardNft.owner === backerKeypair.publicKey,
   );
 
+  // Imprimos el nombre y direccion de cada rewards
   myRewardNfts.forEach((rewardNft) => {
     console.log(` - ${rewardNft.name}: ${rewardNft.publicKey}`);
   });

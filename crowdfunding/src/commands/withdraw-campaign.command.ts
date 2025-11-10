@@ -11,7 +11,6 @@ import {
 } from "@metaplex-foundation/umi";
 import { base58 } from "@metaplex-foundation/umi/serializers";
 import {
-  calculatePaymentOrders,
   fetchAssetWithMetadata,
   getUmi,
   readKeypairFromFile,
@@ -20,7 +19,6 @@ import {
 
 export interface WithdrawCampaignCommandOptions {
   campaignAssetAddress: string;
-  orderNumber: string;
   creatorKeypair: string;
   rpcUrl: string;
   serverKeypair: string;
@@ -30,73 +28,60 @@ export interface WithdrawCampaignCommandOptions {
 export async function withdrawCampaignCommand(
   options: WithdrawCampaignCommandOptions,
 ) {
-  // Initialize UMI
+  // Inicializamos Umi
   const umi = await getUmi(options.serverKeypair);
 
-  // Read the creator keypair
+  // Leemos el keypair del creador
   const creatorKeypair = await readKeypairFromFile(umi, options.creatorKeypair);
 
-  // Fetch the campaign asset with its metadata
+  // Obtenemos el NFT de la campaña con su metadata
   const campaignAssetWithMetadata = await fetchAssetWithMetadata({
     serverKeypair: options.serverKeypair,
     campaignAssetAddress: options.campaignAssetAddress,
   });
 
-  // Transform asset with metadata into campaign
+  // Transformamos el NFT de la campaña en un objeto de tipo campaña
   const campaign = toCampaign(campaignAssetWithMetadata);
 
-  // Assert the creator matches the campaign's creator
+  // Validamos que el creador de la campaña coincide con el keypair del creador dado
   if (campaign.creatorWallet !== creatorKeypair.publicKey) {
     throw new Error("You are not authorized to withdraw from this campaign");
   }
 
-  if (campaign.status === "draft") {
-    throw new Error("Withdraw is not allowed for draft campaigns");
+  // Validamos que la campaña esta activa
+  if (campaign.status !== "active") {
+    throw new Error("Withdraw is only allowed for active campaigns");
   }
 
-  // Get the campaign payment orders
-  const paymentOrders = calculatePaymentOrders(
-    campaign.durationMonths,
-    campaign.goal,
-    campaign.projectStartDate,
-    campaign.paymentOrders,
-  );
-
-  // Calculate the monthly payout amount
-  const monthlyPayout = campaign.goal / campaign.durationMonths;
-
-  // Filter unclaimed payment orders that are due
-  const orderNumber = parseInt(options.orderNumber, 10);
-  const order = paymentOrders.find(
-    (order) => order.orderNumber === orderNumber,
-  );
-
-  if (!order) {
-    throw new Error("Order not found");
-  }
-
-  const currentDate = new Date();
-
-  if (order.status === "claimed") {
-    throw new Error("Order already claimed");
-  }
-
-  if (new Date(order.dueTimestamp) > currentDate) {
-    throw new Error("Order cannot be claimed yet");
-  }
-
-  // Create a noop signer for the campaign asset's signer PDA
+  // Buscamos la direccion del asset signer de la campaña
   const campaignAssetSignerPda = findAssetSignerPda(umi, {
     asset: publicKey(campaign.address),
   });
-  const campaignAssetSigner = createNoopSigner(campaignAssetSignerPda[0]);
 
-  if (campaign.currentlyDeposited < monthlyPayout) {
-    throw new Error("There are not enough funds to claim this payment order.");
+  // Obtenemos la cuenta del asset signer de la campaña
+  const campaignAssetSignerAccount = await umi.rpc.getAccount(
+    campaignAssetSignerPda[0],
+  );
+
+  // Validamos que existe el asset signer
+  if (!campaignAssetSignerAccount.exists) {
+    throw new Error("Campaign asset signer account doesn't exist");
   }
 
-  // Transfer SOL from campaign asset signer to creator
-  const transferAmount = lamports(monthlyPayout);
+  // Calculamos el monto a transferir (todo - 0.001 para la renta)
+  const transferAmount = lamports(
+    campaignAssetSignerAccount.lamports.basisPoints - BigInt(1000000),
+  );
+
+  // Validamos que la meta se cumplio
+  if (transferAmount <= lamports(campaign.goal)) {
+    throw new Error("There are not enough funds to withdraw from campaign.");
+  }
+
+  // Creamos un signer para autorizar la operacion del asset signer
+  const campaignAssetSigner = createNoopSigner(campaignAssetSignerPda[0]);
+
+  // Transferimos SOL del asset signer de la campaña al creador
   const transferSolSignature = await execute(umi, {
     asset: campaignAssetWithMetadata,
     instructions: transferSol(umi, {
@@ -113,13 +98,13 @@ export async function withdrawCampaignCommand(
     }`,
   );
 
-  // Update campaign attributes
+  // Actualizamos el estado de la campaña
   const updateCampaignSignature = await updatePlugin(umi, {
     asset: publicKey(options.campaignAssetAddress),
     plugin: {
       type: "Attributes",
       attributeList: [
-        { key: "status", value: "active" },
+        { key: "status", value: "work in progress" },
         {
           key: "pledgesCollectionAddress",
           value: campaign.pledgesCollectionAddress
@@ -131,25 +116,9 @@ export async function withdrawCampaignCommand(
           key: "refundedPledges",
           value: campaign.refundedPledges.toString(),
         },
-        {
-          key: "totalDeposited",
-          value: campaign.totalDeposited.toString(),
-        },
-        {
-          key: "currentlyDeposited",
-          value: (campaign.currentlyDeposited - monthlyPayout).toString(),
-        },
-        ...paymentOrders.map((paymentOrder) => ({
-          key: `paymentOrder_${paymentOrder.orderNumber}`,
-          value:
-            paymentOrder.orderNumber === orderNumber
-              ? "claimed"
-              : paymentOrder.status,
-        })),
       ],
     },
   }).sendAndConfirm(umi);
-
   console.log(
     `Updated campaign (address: ${campaign.address}) signature: ${base58.deserialize(updateCampaignSignature.signature)[0]}`,
   );

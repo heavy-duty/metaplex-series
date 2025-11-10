@@ -24,41 +24,49 @@ export interface InitializeCampaignCommandOptions {
 export async function initializeCampaignCommand(
   options: InitializeCampaignCommandOptions,
 ) {
-  // Initialize UMI
+  // Inicializamos Umi
   const umi = await getUmi(options.serverKeypair);
 
-  // Read the creator keypair
+  // Leemos el keypair del creador
   const creatorKeypair = await readKeypairFromFile(umi, options.creatorKeypair);
 
-  // Fetch the campaign asset with its metadata
+  // Obtenemos el NFT de la campaña con su metadata
   const campaignAssetWithMetadata = await fetchAssetWithMetadata({
     serverKeypair: options.serverKeypair,
     campaignAssetAddress: options.campaignAssetAddress,
   });
 
-  // Transform asset with metadata into campaign
+  // Transformamos el NFT y su metadata en un objeto de tipo campaña
   const campaign = toCampaign(campaignAssetWithMetadata);
 
+  // Validamos que la campaña esta en estado "draft"
   if (campaign.status !== "draft") {
     throw new Error("Initialize is only allowed for draft campaigns");
   }
 
+  // Validamos que el creador de la campaña coincide con el keypair dado
   if (campaign.creatorWallet !== creatorKeypair.publicKey) {
     throw new Error("You are not authorized to initialize this campaign");
   }
 
-  // Upload metadata and create pledges collection
+  // Subimos la imagen de la coleccion de pledges
   const pledgesCollectionImage = await uploadImage(
     umi,
     path.join(__dirname, "../../assets", "pledges-collection-image.png"),
   );
+
+  // Subimos la metadata de la coleccion de pledges
   const pledgesCollectionUri = await umi.uploader.uploadJson({
     name: "Pledges Collection",
     symbol: "PLEDGE",
     description: "A collection of pledges for a campaign",
     image: pledgesCollectionImage,
   });
+
+  // Generamos el signer asociado a la coleccion de pledges
   const pledgesCollectionSigner = generateSigner(umi);
+
+  // Creamos la coleccion de pledges
   const createCollectionSignature = await createCollectionV1(umi, {
     collection: pledgesCollectionSigner,
     name: "Pledges Collection",
@@ -70,7 +78,7 @@ export async function initializeCampaignCommand(
     }`,
   );
 
-  // Update campaign attributes (status and campaign asset address)
+  // Actualizamos el estado de la campaña y guardamos la direccion de la coleccion de pledges
   const updateCampaignSignature = await updatePlugin(umi, {
     asset: publicKey(options.campaignAssetAddress),
     plugin: {
@@ -83,12 +91,6 @@ export async function initializeCampaignCommand(
         },
         { key: "totalPledges", value: "0" },
         { key: "refundedPledges", value: "0" },
-        { key: "totalDeposited", value: "0" },
-        { key: "currentlyDeposited", value: "0" },
-        ...campaign.paymentOrders.map((paymentOrder) => ({
-          key: `paymentOrder_${paymentOrder.orderNumber}`,
-          value: paymentOrder.status,
-        })),
       ],
     },
   }).sendAndConfirm(umi);

@@ -28,43 +28,41 @@ export interface ClaimCampaignCommandOptions {
 export async function claimCampaignCommand(
   options: ClaimCampaignCommandOptions,
 ) {
-  // Initialize UMI
+  // Inicializamos umi
   const umi = await getUmi(options.serverKeypair);
 
-  // Read the backer keypair
+  // Leemos el keypair del backer
   const backerKeypair = await readKeypairFromFile(umi, options.backerKeypair);
 
-  // Fetch the campaign asset with its metadata
+  // Obtenemos el NFT de la campaña con su metadata
   const campaignAssetWithMetadata = await fetchAssetWithMetadata({
     serverKeypair: options.serverKeypair,
     campaignAssetAddress: options.campaignAssetAddress,
   });
+
+  // Transformamos el NFT de la campaña en un objeto de tipo campaña
   const campaign = toCampaign(campaignAssetWithMetadata);
 
-  // Fetch the pledge nft
+  // Obtenemos el NFT del pledge
   const pledgeAsset = await fetchAssetV1(
     umi,
     publicKey(options.pledgeAssetAddress),
   );
 
+  // Validamos que el owner del pledge coincide con el keypair del backer
   if (pledgeAsset.owner !== backerKeypair.publicKey) {
     throw new Error("You are not authorized to claim with this pledge");
   }
 
-  if (!campaign.pledgesCollectionAddress) {
-    throw new Error("Pledges collection address not defined");
+  // Validamos que el estado sea "finalized"
+  if (campaign.status !== "finalized") {
+    throw new Error("Only finalized campaigns can have claims");
   }
 
-  if (!campaign.rewardsCollectionAddress) {
-    throw new Error("Rewards collection address not defined");
-  }
-
-  if (!campaign.rewardsCandyMachineAddress) {
-    throw new Error("Rewards candy machine address not defined");
-  }
-
-  // Mint a reward nft from the candy machine by burning the pledge nft
+  // Generamos el signer asociado al rewards
   const rewardSigner = generateSigner(umi);
+
+  // Minteamos el NFT del rewards y quemamos el NFT del pledge
   const mintRewardSignature = await transactionBuilder()
     .add(setComputeUnitLimit(umi, { units: 800_000 }))
     .add(
