@@ -42,25 +42,10 @@ program
   .command("create-campaign")
   .description("Mints Campaign NFT")
   .requiredOption("--goal <lamports>", "Funding goal in lamports")
-  .requiredOption("--durationMonths <num>", "Duration in months")
   .requiredOption("--name <string>", "Campaign name")
   .requiredOption("--symbol <string>", "Campaign symbol")
   .requiredOption("--description <string>", "Campaign description")
   .requiredOption("--creatorKeypair <path>", "Creator's keypair file path")
-  .requiredOption(
-    "--projectStartDate <timestamp>",
-    "Project start timestamp (Unix)",
-  )
-  .option(
-    "--basePrice <lamports>",
-    "Initial price in lamports",
-    process.env.BASE_PRICE || "100000000",
-  )
-  .option(
-    "--bondingSlope <lamports>",
-    "Bonding curve slope",
-    process.env.BONDING_SLOPE || "10000000",
-  )
   .action(createCommand(createCampaignCommand));
 
 // Command: initialize-campaign

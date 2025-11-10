@@ -1,30 +1,41 @@
 import { AssetWithMetadata } from "./fetch-asset-with-metadata";
 
-export type CampaignStatus = "draft" | "active" | "finalized";
+export type CampaignStatus =
+  | "draft"
+  | "active"
+  | "work in progress"
+  | "finalized";
 
 export type PaymentOrderStatus = "unclaimed" | "claimed";
 
-export interface Campaign {
+export interface BaseCampaign {
   address: string;
   name: string;
   description: string;
   symbol: string;
-  durationMonths: number;
   creatorWallet: string;
-  projectStartDate: Date;
   goal: number;
-  basePrice: number;
-  bondingSlope: number;
   status: CampaignStatus;
   totalPledges: number;
   refundedPledges: number;
-  totalDeposited: number;
-  currentlyDeposited: number;
-  paymentOrders: { orderNumber: number; status: PaymentOrderStatus }[];
-  pledgesCollectionAddress: string | null;
-  rewardsCollectionAddress: string | null;
-  rewardsCandyMachineAddress: string | null;
 }
+
+export type Campaign = BaseCampaign &
+  (
+    | { status: "draft" }
+    | { status: "active"; pledgesCollectionAddress: string }
+    | {
+        status: "work in progress";
+        pledgesCollectionAddress: string;
+        rewardsCollectionAddress: string;
+      }
+    | {
+        status: "finalized";
+        pledgesCollectionAddress: string;
+        rewardsCollectionAddress: string;
+        rewardsCandyMachineAddress: string;
+      }
+  );
 
 export function toCampaign(assetWithMetadata: AssetWithMetadata): Campaign {
   const campaignGoal =
@@ -36,33 +47,6 @@ export function toCampaign(assetWithMetadata: AssetWithMetadata): Campaign {
     throw new Error("Campaign is missing goal");
   }
 
-  const campaignBasePrice =
-    assetWithMetadata.metadata.attributes.find(
-      (attribute) => attribute.trait_type === "basePrice",
-    )?.value || null;
-
-  if (campaignBasePrice === null) {
-    throw new Error("Campaign is missing basePrice");
-  }
-
-  const campaignBondingSlope =
-    assetWithMetadata.metadata.attributes.find(
-      (attribute) => attribute.trait_type === "bondingSlope",
-    )?.value || null;
-
-  if (campaignBondingSlope === null) {
-    throw new Error("Campaign is missing bondingSlope");
-  }
-
-  const campaignDurationMonths =
-    assetWithMetadata.metadata.attributes.find(
-      (attribute) => attribute.trait_type === "durationMonths",
-    )?.value || null;
-
-  if (campaignDurationMonths === null) {
-    throw new Error("Campaign is missing durationMonths");
-  }
-
   const campaignCreatorWallet =
     assetWithMetadata.metadata.attributes.find(
       (attribute) => attribute.trait_type === "creatorWallet",
@@ -70,15 +54,6 @@ export function toCampaign(assetWithMetadata: AssetWithMetadata): Campaign {
 
   if (campaignCreatorWallet === null) {
     throw new Error("Campaign is missing creatorWallet");
-  }
-
-  const campaignProjectStartDate =
-    assetWithMetadata.metadata.attributes.find(
-      (attribute) => attribute.trait_type === "projectStartDate",
-    )?.value || null;
-
-  if (campaignProjectStartDate === null) {
-    throw new Error("Campaign is missing projectStartDate");
   }
 
   const campaignTotalPledges =
@@ -99,24 +74,6 @@ export function toCampaign(assetWithMetadata: AssetWithMetadata): Campaign {
     throw new Error("Campaign is missing refundedPledges");
   }
 
-  const campaignTotalDeposited =
-    assetWithMetadata.attributes?.attributeList.find(
-      (attribute) => attribute.key === "totalDeposited",
-    )?.value || null;
-
-  if (campaignTotalDeposited === null) {
-    throw new Error("Campaign is missing totalDeposited");
-  }
-
-  const campaignCurrentlyDeposited =
-    assetWithMetadata.attributes?.attributeList.find(
-      (attribute) => attribute.key === "currentlyDeposited",
-    )?.value || null;
-
-  if (campaignCurrentlyDeposited === null) {
-    throw new Error("Campaign is missing currently deposited");
-  }
-
   const campaignStatus =
     assetWithMetadata.attributes?.attributeList.find(
       (attribute) => attribute.key === "status",
@@ -129,26 +86,10 @@ export function toCampaign(assetWithMetadata: AssetWithMetadata): Campaign {
   if (
     campaignStatus !== "draft" &&
     campaignStatus !== "active" &&
+    campaignStatus !== "work in progress" &&
     campaignStatus !== "finalized"
   ) {
     throw new Error("Campaign status is invalid");
-  }
-
-  const campaignPaymentOrders =
-    assetWithMetadata.attributes?.attributeList
-      .filter((attribute) => attribute.key.includes("paymentOrder"))
-      .map((attribute) => {
-        const orderNumber = attribute.key.split("_")[1];
-        return {
-          orderNumber: parseInt(orderNumber, 10),
-          status: attribute.value as PaymentOrderStatus,
-        };
-      }) || null;
-
-  campaignPaymentOrders?.sort((a, b) => a.orderNumber - b.orderNumber);
-
-  if (campaignPaymentOrders === null) {
-    throw new Error("Campaign is missing payment orders");
   }
 
   const campaignPledgesCollectionAddress =
@@ -166,25 +107,85 @@ export function toCampaign(assetWithMetadata: AssetWithMetadata): Campaign {
       (attribute) => attribute.key === "rewardsCandyMachineAddress",
     )?.value || null;
 
-  return {
-    address: assetWithMetadata.publicKey,
-    name: assetWithMetadata.name,
-    description: assetWithMetadata.metadata.description,
-    symbol: assetWithMetadata.metadata.symbol,
-    goal: parseInt(campaignGoal, 10),
-    basePrice: parseInt(campaignBasePrice, 10),
-    bondingSlope: parseInt(campaignBondingSlope, 10),
-    durationMonths: parseInt(campaignDurationMonths, 10),
-    creatorWallet: campaignCreatorWallet,
-    projectStartDate: new Date(parseInt(campaignProjectStartDate, 10) * 1000),
-    totalPledges: parseInt(campaignTotalPledges, 10),
-    refundedPledges: parseInt(campaignRefundedPledges, 10),
-    totalDeposited: parseInt(campaignTotalDeposited, 10),
-    currentlyDeposited: parseInt(campaignCurrentlyDeposited, 10),
-    status: campaignStatus,
-    paymentOrders: campaignPaymentOrders,
-    pledgesCollectionAddress: campaignPledgesCollectionAddress,
-    rewardsCollectionAddress: campaignRewardsCollectionAddress,
-    rewardsCandyMachineAddress: campaignRewardsCandyMachineAddress,
-  };
+  if (campaignStatus === "draft") {
+    return {
+      address: assetWithMetadata.publicKey,
+      name: assetWithMetadata.name,
+      description: assetWithMetadata.metadata.description,
+      symbol: assetWithMetadata.metadata.symbol,
+      goal: parseInt(campaignGoal, 10),
+      creatorWallet: campaignCreatorWallet,
+      totalPledges: parseInt(campaignTotalPledges, 10),
+      refundedPledges: parseInt(campaignRefundedPledges, 10),
+      status: "draft",
+    };
+  } else if (campaignStatus === "active") {
+    if (!campaignPledgesCollectionAddress) {
+      throw new Error("Campaign is missing the pledges collection address");
+    }
+
+    return {
+      address: assetWithMetadata.publicKey,
+      name: assetWithMetadata.name,
+      description: assetWithMetadata.metadata.description,
+      symbol: assetWithMetadata.metadata.symbol,
+      goal: parseInt(campaignGoal, 10),
+      creatorWallet: campaignCreatorWallet,
+      totalPledges: parseInt(campaignTotalPledges, 10),
+      refundedPledges: parseInt(campaignRefundedPledges, 10),
+      status: "active",
+      pledgesCollectionAddress: campaignPledgesCollectionAddress,
+    };
+  } else if (campaignStatus === "work in progress") {
+    if (!campaignPledgesCollectionAddress) {
+      throw new Error("Campaign is missing the pledges collection address");
+    }
+
+    if (!campaignRewardsCollectionAddress) {
+      throw new Error("Campaign is missing the rewards collection address");
+    }
+
+    return {
+      address: assetWithMetadata.publicKey,
+      name: assetWithMetadata.name,
+      description: assetWithMetadata.metadata.description,
+      symbol: assetWithMetadata.metadata.symbol,
+      goal: parseInt(campaignGoal, 10),
+      creatorWallet: campaignCreatorWallet,
+      totalPledges: parseInt(campaignTotalPledges, 10),
+      refundedPledges: parseInt(campaignRefundedPledges, 10),
+      status: "work in progress",
+      pledgesCollectionAddress: campaignPledgesCollectionAddress,
+      rewardsCollectionAddress: campaignRewardsCollectionAddress,
+    };
+  } else if (campaignStatus === "finalized") {
+    if (!campaignPledgesCollectionAddress) {
+      throw new Error("Campaign is missing the pledges collection address");
+    }
+
+    if (!campaignRewardsCollectionAddress) {
+      throw new Error("Campaign is missing the rewards collection address");
+    }
+
+    if (!campaignRewardsCandyMachineAddress) {
+      throw new Error("Campaign is missing the rewards candy machine address");
+    }
+
+    return {
+      address: assetWithMetadata.publicKey,
+      name: assetWithMetadata.name,
+      description: assetWithMetadata.metadata.description,
+      symbol: assetWithMetadata.metadata.symbol,
+      goal: parseInt(campaignGoal, 10),
+      creatorWallet: campaignCreatorWallet,
+      totalPledges: parseInt(campaignTotalPledges, 10),
+      refundedPledges: parseInt(campaignRefundedPledges, 10),
+      status: "finalized",
+      pledgesCollectionAddress: campaignPledgesCollectionAddress,
+      rewardsCollectionAddress: campaignRewardsCollectionAddress,
+      rewardsCandyMachineAddress: campaignRewardsCandyMachineAddress,
+    };
+  } else {
+    throw new Error("Invalid campaign status");
+  }
 }

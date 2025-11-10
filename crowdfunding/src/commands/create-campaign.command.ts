@@ -1,25 +1,15 @@
 import { create as createCoreNft } from "@metaplex-foundation/mpl-core";
 import { generateSigner } from "@metaplex-foundation/umi";
 import { base58 } from "@metaplex-foundation/umi/serializers";
-import { getUnixTime, parseISO } from "date-fns";
 import path from "path";
-import {
-  calculatePaymentOrders,
-  getUmi,
-  readKeypairFromFile,
-  uploadImage,
-} from "../utils";
+import { getUmi, readKeypairFromFile, uploadImage } from "../utils";
 
 export interface CreateCampaignCommandOptions {
   goal: string;
-  durationMonths: string;
   name: string;
   description: string;
   symbol: string;
   creatorKeypair: string;
-  projectStartDate: string;
-  basePrice: string;
-  bondingSlope: string;
   rpcUrl: string;
   serverKeypair: string;
   logLevel: string;
@@ -28,19 +18,19 @@ export interface CreateCampaignCommandOptions {
 export async function createCampaignCommand(
   options: CreateCampaignCommandOptions,
 ) {
-  // Initialize UMI
+  // Inicializamos Umi
   const umi = await getUmi(options.serverKeypair);
 
-  // Read the creator keypair
+  // Leemos el keypair del creador
   const creatorKeypair = await readKeypairFromFile(umi, options.creatorKeypair);
 
-  // Upload campaign image
+  // Subimos la imagen de la campaña
   const campaignImage = await uploadImage(
     umi,
     path.join(__dirname, "../../assets", "campaign-image.png"),
   );
 
-  // Upload campaign metadata
+  // Subimos la metadata de la campaña
   const campaignUri = await umi.uploader.uploadJson({
     name: options.name,
     symbol: options.symbol,
@@ -48,34 +38,18 @@ export async function createCampaignCommand(
     image: campaignImage,
     attributes: [
       { trait_type: "goal", value: options.goal },
-      { trait_type: "durationMonths", value: options.durationMonths },
       { trait_type: "creatorWallet", value: creatorKeypair.publicKey },
-      { trait_type: "basePrice", value: options.basePrice },
-      { trait_type: "bondingSlope", value: options.bondingSlope },
-      {
-        trait_type: "projectStartDate",
-        value: getUnixTime(parseISO(options.projectStartDate)).toString(),
-      },
     ],
   });
 
-  // Calculate additional fields
-  const goal = parseInt(options.goal, 10);
-  const durationMonths = parseInt(options.durationMonths, 10);
-  const projectStartDate = parseISO(options.projectStartDate);
-  const paymentOrders = calculatePaymentOrders(
-    durationMonths,
-    goal,
-    projectStartDate,
-  );
-
-  // Create a Campaign NFT using Core
+  // Generamos el signer asociado al NFT de la campaña
   const campaignSigner = generateSigner(umi);
+
+  // Creamos el NFT de la campaña usando core
   const createCampaignSignature = await createCoreNft(umi, {
     asset: campaignSigner,
     name: options.name,
     uri: campaignUri,
-    owner: umi.identity.publicKey,
     plugins: [
       {
         type: "Attributes",
@@ -83,12 +57,6 @@ export async function createCampaignCommand(
           { key: "status", value: "draft" },
           { key: "totalPledges", value: "0" },
           { key: "refundedPledges", value: "0" },
-          { key: "totalDeposited", value: "0" },
-          { key: "currentlyDeposited", value: "0" },
-          ...paymentOrders.map((paymentOrder) => ({
-            key: `paymentOrder_${paymentOrder.orderNumber}`,
-            value: paymentOrder.status,
-          })),
         ],
       },
     ],

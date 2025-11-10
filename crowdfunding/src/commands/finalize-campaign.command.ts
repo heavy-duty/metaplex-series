@@ -28,42 +28,49 @@ export interface FinalizeCampaignCommandOptions {
 export async function finalizeCampaignCommand(
   options: FinalizeCampaignCommandOptions,
 ) {
-  // Initialize UMI
+  // Inicializamos umi
   const umi = await getUmi(options.serverKeypair);
 
-  // Read the creator keypair
+  // Leemos el keypair del creador
   const creatorKeypair = await readKeypairFromFile(umi, options.creatorKeypair);
 
-  // Fetch the campaign asset with its metadata
+  // Obtenemos el NFT de la campaña con su metadata
   const campaignAssetWithMetadata = await fetchAssetWithMetadata({
     serverKeypair: options.serverKeypair,
     campaignAssetAddress: options.campaignAssetAddress,
   });
 
-  // Transform asset with metadata into campaign
+  // Transformamos el NFT con su metadata en un objeto de tipo campaña
   const campaign = toCampaign(campaignAssetWithMetadata);
 
-  // Validate campaign
-  if (!campaign.pledgesCollectionAddress) {
-    throw new Error("Pledges collection address not defined");
+  // Validamos que el estado sea "work in progress"
+  if (campaign.status !== "work in progress") {
+    throw new Error("Only campaigns in progress can be finalized");
   }
 
+  // Validamos que el creador coincide con el keypair del creador
   if (campaign.creatorWallet !== creatorKeypair.publicKey) {
     throw new Error("Not authorized to finalize this campaign");
   }
 
-  // Create the rewards collection
+  // Subimos la imagen de la coleccion de rewards
   const rewardCollectionImage = await uploadImage(
     umi,
     path.join(__dirname, "../../assets", "rewards-collection-image.png"),
   );
+
+  // Subimos la metadata de la coleccion de rewards
   const rewardCollectionUri = await umi.uploader.uploadJson({
     name: "Rewards Collection",
     symbol: "REWARD",
     description: "A collection of rewards for a campaign",
     image: rewardCollectionImage,
   });
+
+  // Generamos un signer asociado a la coleccion de rewards
   const rewardsCollectionSigner = generateSigner(umi);
+
+  // Creamos la coleccion de rewards
   const createRewardsCollectionSignature = await createCollectionV1(umi, {
     collection: rewardsCollectionSigner,
     name: "Rewards Collection",
@@ -75,9 +82,13 @@ export async function finalizeCampaignCommand(
     }`,
   );
 
-  // Create the rewards candy machine
+  // Generamos un signer asociado a la candy machine de rewards
   const rewardsCandyMachineSigner = generateSigner(umi);
+
+  // Calculamos la cantidad de rewards disponibles
   const rewardsAvailable = campaign.totalPledges - campaign.refundedPledges;
+
+  // Creamos la transaccion para crear la candy machine de rewards
   const createRewardsCandyMachineTransaction = await createCandyMachine(umi, {
     candyMachine: rewardsCandyMachineSigner,
     collection: rewardsCollectionSigner.publicKey,
@@ -96,6 +107,8 @@ export async function finalizeCampaignCommand(
       }),
     },
   });
+
+  // Enviamos y confirmamos la transaccion para crear la candy machine de rewards
   const createRewardsCandyMachineSignature =
     await createRewardsCandyMachineTransaction.sendAndConfirm(umi);
   console.log(
@@ -104,19 +117,25 @@ export async function finalizeCampaignCommand(
     }`,
   );
 
-  // Add rewards to the candy machine (use generic reward for now)
+  // Subimos imagen de los rewards (reusaremos uno para el ejemplo)
   const rewardImage = await uploadImage(
     umi,
     path.join(__dirname, "../../assets", "reward-image.png"),
   );
+
+  // Subimos la metadata de los rewards (tambien reusaremos esto)
   const rewardUri = await umi.uploader.uploadJson({
     name: "Reward",
     symbol: "REWARD",
     description: "A reward from a successful campaign.",
     image: rewardImage,
   });
+
+  // Obtenemos el hash asociado al rewards
   const rewardUriSegments = rewardUri.split("/");
   const rewardAssetHash = rewardUriSegments[rewardUriSegments.length - 1];
+
+  // Agregamos los elementos a la candy machine por lotes
   const BATCH_SIZE = 10;
   let index = 0;
 
@@ -141,7 +160,7 @@ export async function finalizeCampaignCommand(
     index += BATCH_SIZE;
   }
 
-  // Update the candy machine to mark it as finalized.
+  // Marcamos el estado de la campaña como finalizada
   const updateCampaignSignature = await updatePlugin(umi, {
     asset: publicKey(options.campaignAssetAddress),
     plugin: {
@@ -162,18 +181,6 @@ export async function finalizeCampaignCommand(
         },
         { key: "totalPledges", value: campaign.totalPledges.toString() },
         { key: "refundedPledges", value: campaign.refundedPledges.toString() },
-        {
-          key: "totalDeposited",
-          value: campaign.totalDeposited.toString(),
-        },
-        {
-          key: "currentlyDeposited",
-          value: campaign.currentlyDeposited.toString(),
-        },
-        ...campaign.paymentOrders.map((paymentOrder) => ({
-          key: `paymentOrder_${paymentOrder.orderNumber}`,
-          value: paymentOrder.status,
-        })),
       ],
     },
   }).sendAndConfirm(umi);

@@ -8,15 +8,15 @@ export interface CampaignCommandOptions {
 }
 
 export async function campaignCommand(options: CampaignCommandOptions) {
-  // Fetch the asset with metadata
+  // Obtenemos el NFT de la campaña con su metadata
   const campaignAssetWithMetadata = await fetchAssetWithMetadata({
     campaignAssetAddress: options.campaignAssetAddress,
     serverKeypair: options.serverKeypair,
   });
 
-  // Transform asset with metadata into campaign
+  // Transformamos el NFT en un objeto de tipo campaña
   const campaign = toCampaign(campaignAssetWithMetadata);
 
-  // Pretty print the campaign and all its details
+  // Imprimimos la campaña y sus detalles
   console.log(JSON.stringify(campaign, null, "  "));
 }

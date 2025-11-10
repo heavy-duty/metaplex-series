@@ -8,8 +8,8 @@ import { transferSol } from "@metaplex-foundation/mpl-toolbox";
 import {
   createSignerFromKeypair,
   generateSigner,
-  lamports,
   publicKey,
+  sol,
 } from "@metaplex-foundation/umi";
 import { base58 } from "@metaplex-foundation/umi/serializers";
 import path from "path";
@@ -32,61 +32,67 @@ export interface PledgeCampaignCommandOptions {
 export async function pledgeCampaignCommand(
   options: PledgeCampaignCommandOptions,
 ) {
-  // Initialize UMI
+  // Inicializamos Umi
   const umi = await getUmi(options.serverKeypair);
 
-  // Read the backer keypair
+  // Leemos el keypair del backer
   const backerKeypair = await readKeypairFromFile(umi, options.backerKeypair);
 
-  // Fetch the campaign asset with its metadata
+  // Obtenemos el NFT de la campaña con su metadata
   const campaignAssetWithMetadata = await fetchAssetWithMetadata({
     serverKeypair: options.serverKeypair,
     campaignAssetAddress: options.campaignAssetAddress,
   });
 
-  // Transform asset with metadata into campaign
+  // Transformamos el NFT de la campaña en un objeto de tipo campaña
   const campaign = toCampaign(campaignAssetWithMetadata);
 
-  if (!campaign.pledgesCollectionAddress) {
-    throw new Error("Pledges collection address is missing.");
+  // Validamos que la campaña este activa
+  if (campaign.status !== "active") {
+    throw new Error("Only active campaigns can receive pledges");
   }
 
-  // Calculate the cost of the current pledge and transfer pledge cost in SOL to the campaign asset signer
-  const netPledgeSupply = campaign.totalPledges - campaign.refundedPledges;
-  const currentPledgePrice =
-    campaign.basePrice + netPledgeSupply * campaign.bondingSlope;
-
+  // Buscamos la direccion del asset signer de la campaña
   const campaignAssetSigner = findAssetSignerPda(umi, {
     asset: publicKey(campaign.address),
   });
-  const transferAmount = lamports(currentPledgePrice);
+
+  // Transferimos SOL al asset signer de la campaña
   const transferSolSignature = await transferSol(umi, {
-    amount: transferAmount,
+    amount: sol(0.001),
     destination: campaignAssetSigner,
     source: createSignerFromKeypair(umi, backerKeypair),
   }).sendAndConfirm(umi);
   console.log(
-    `Transfer ${Number(transferAmount.basisPoints) / Math.pow(10, transferAmount.decimals)} SOL (to address: ${campaignAssetSigner[0]}) signature: ${
+    `Transfer 0.001 SOL (to address: ${campaignAssetSigner[0]}) signature: ${
       base58.deserialize(transferSolSignature.signature)[0]
     }`,
   );
 
-  // Upload metadata and create pledge
+  // Subimos la imagen del pledge
   const pledgeImage = await uploadImage(
     umi,
     path.join(__dirname, "../../assets", "pledge-image.png"),
   );
+
+  // Subimos la metadata del pledge
   const pledgeUri = await umi.uploader.uploadJson({
     name: `Pledge #${campaign.totalPledges}`,
     symbol: "PLEDGE",
     description: `This NFT represents a pledge to the campaign with address: ${campaign.address}`,
     image: pledgeImage,
   });
+
+  // Obtenemos la coleccion de pledges
   const pledgesCollection = await fetchCollection(
     umi,
     publicKey(campaign.pledgesCollectionAddress),
   );
+
+  // Generamos el signer asociado al pledge
   const pledgeSigner = generateSigner(umi);
+
+  // Creamos el NFT del pledge
   const createPledgeSignature = await createCoreNft(umi, {
     asset: pledgeSigner,
     name: `Pledge #${campaign.totalPledges}`,
@@ -100,7 +106,7 @@ export async function pledgeCampaignCommand(
     }`,
   );
 
-  // Update campaign attributes
+  // Actualizamos la cantidad total de pledges en la campaña
   const updateCampaignSignature = await updatePlugin(umi, {
     asset: publicKey(options.campaignAssetAddress),
     plugin: {
@@ -113,18 +119,6 @@ export async function pledgeCampaignCommand(
         },
         { key: "totalPledges", value: (campaign.totalPledges + 1).toString() },
         { key: "refundedPledges", value: campaign.refundedPledges.toString() },
-        {
-          key: "totalDeposited",
-          value: (campaign.totalDeposited + currentPledgePrice).toString(),
-        },
-        {
-          key: "currentlyDeposited",
-          value: (campaign.currentlyDeposited + currentPledgePrice).toString(),
-        },
-        ...campaign.paymentOrders.map((paymentOrder) => ({
-          key: `paymentOrder_${paymentOrder.orderNumber}`,
-          value: paymentOrder.status,
-        })),
       ],
     },
   }).sendAndConfirm(umi);
