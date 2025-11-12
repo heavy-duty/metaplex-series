@@ -11,7 +11,7 @@ import path from "path";
 
 export async function createNftAction(umi: Umi) {
   // Subimos la imagen a la red de irys
-  const imagePath = path.join(__dirname, "../../assets/image.png");
+  const imagePath = path.join(__dirname, "../../assets/espada_oro.png");
   const imageBuffer = await readFile(imagePath);
   const imageFile = createGenericFile(imageBuffer, imagePath, {
     contentType: "image/png",
@@ -20,10 +20,19 @@ export async function createNftAction(umi: Umi) {
 
   // Subimos la metadata a la red de irys
   const uri = await umi.uploader.uploadJson({
-    name: "Mi primer NFT",
-    symbol: "FAM",
-    description: "Este es mi primer NFT de Metaplex",
+    name: "Espada de Oro",
+    description: "Espada de oro para expertos",
     image,
+    attributes: [
+      {
+        trait_type: "Material",
+        value: "Oro",
+      },
+      { trait_type: "Nivel", value: "10" },
+    ],
+    // Animation url
+    // External url
+    // Properties: files and asset category
   });
 
   // Generamos el signer que sera asociado al mint
@@ -33,7 +42,7 @@ export async function createNftAction(umi: Umi) {
   // Minteamos el NFT en la red de solana
   const createSignature = await createNft(umi, {
     mint: mintSigner,
-    name: "Mi NFT",
+    name: "Espada de Oro",
     uri,
     sellerFeeBasisPoints: percentAmount(0),
   }).sendAndConfirm(umi);

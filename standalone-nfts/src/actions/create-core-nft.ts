@@ -10,7 +10,7 @@ import path from "path";
 
 export async function createCoreNftAction(umi: Umi) {
   // Subimos la imagen a la red de irys
-  const imagePath = path.join(__dirname, "../../assets/image.png");
+  const imagePath = path.join(__dirname, "../../assets/espada_oro.png");
   const imageBuffer = await readFile(imagePath);
   const imageFile = createGenericFile(imageBuffer, imagePath, {
     contentType: "image/png",
@@ -19,10 +19,19 @@ export async function createCoreNftAction(umi: Umi) {
 
   // Subimos la metadata a la red de irys
   const uri = await umi.uploader.uploadJson({
-    name: "Mi primer Core NFT",
-    symbol: "FAM",
-    description: "Este es mi primer Core NFT de Metaplex",
+    name: "Espada de Oro (c)",
+    description: "Espada de oro para expertos",
     image,
+    attributes: [
+      {
+        trait_type: "Material",
+        value: "Oro",
+      },
+      { trait_type: "Nivel", value: "10" },
+    ],
+    // Animation url
+    // External url
+    // Properties: files and asset category
   });
 
   // Generamos el signer que sera asociado al asset
@@ -32,19 +41,8 @@ export async function createCoreNftAction(umi: Umi) {
   // Create the NFT
   const createSignature = await createCoreNft(umi, {
     asset: assetSigner,
-    name: "Mi Core NFT",
+    name: "Espada de Oro (c)",
     uri,
-    plugins: [
-      {
-        type: "Autograph",
-        signatures: [
-          {
-            address: umi.identity.publicKey,
-            message: "I approve this",
-          },
-        ],
-      },
-    ],
   }).sendAndConfirm(umi);
   console.log(
     `   > Create Core NFT signature: ${

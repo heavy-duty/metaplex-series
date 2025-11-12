@@ -4,9 +4,9 @@ import { readFile } from "fs/promises";
 export async function uploadImageAndMetadata(
   umi: Umi,
   name: string,
-  symbol: string,
   description: string,
   imagePath: string,
+  attributes: { trait_type: string; value: string }[],
 ) {
   // Subimos la imagen a la red de irys
   const imageBuffer = await readFile(imagePath);
@@ -18,9 +18,9 @@ export async function uploadImageAndMetadata(
   // Subimos la metadata a la red de irys
   const uri = await umi.uploader.uploadJson({
     name,
-    symbol,
     description,
     image,
+    ...(attributes.length > 0 ? { attributes } : {}),
   });
 
   // Retornamos el URI de la metadata

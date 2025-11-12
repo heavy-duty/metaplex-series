@@ -20,7 +20,7 @@ import path from "path";
 
 export async function createSemiFungibleAction(umi: Umi) {
   // Subimos la imagen a la red de irys
-  const imagePath = path.join(__dirname, "../../assets/image.png");
+  const imagePath = path.join(__dirname, "../../assets/espada_hierro.png");
   const imageBuffer = await readFile(imagePath);
   const imageFile = createGenericFile(imageBuffer, imagePath, {
     contentType: "image/png",
@@ -29,10 +29,19 @@ export async function createSemiFungibleAction(umi: Umi) {
 
   // Subimos la metadata a la red de irys
   const uri = await umi.uploader.uploadJson({
-    name: "Mi primer token semi fungible",
-    symbol: "FAM",
-    description: "Este es mi primer token semi fungible de Metaplex",
+    name: "Espada de Hierro",
+    description: "Espada de hierro para principiantes",
     image,
+    attributes: [
+      {
+        trait_type: "Material",
+        value: "Hierro",
+      },
+      { trait_type: "Nivel", value: "3" },
+    ],
+    // Animation url
+    // External url
+    // Properties: files and asset category
   });
 
   // Generamos el signer que sera asociado al mint
@@ -42,7 +51,7 @@ export async function createSemiFungibleAction(umi: Umi) {
   // Creamos el mint del token semi fungible en la red de Solana
   const createSignature = await createFungibleAsset(umi, {
     mint: mintSigner,
-    name: "Mi semi fungible",
+    name: "Espada de Hierro",
     uri,
     sellerFeeBasisPoints: percentAmount(0),
   }).sendAndConfirm(umi);
@@ -75,7 +84,7 @@ export async function createSemiFungibleAction(umi: Umi) {
   // Minteamos unos tokens a la wallet del receptor
   const mintSignature = await mintV1(umi, {
     mint: mintSigner.publicKey,
-    amount: 1,
+    amount: 3,
     tokenOwner: umi.identity.publicKey,
     tokenStandard: TokenStandard.FungibleAsset,
   }).sendAndConfirm(umi);

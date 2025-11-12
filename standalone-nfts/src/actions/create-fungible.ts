@@ -20,7 +20,7 @@ import path from "path";
 
 export async function createFungibleAction(umi: Umi) {
   // Subimos la imagen a la red de irys
-  const imagePath = path.join(__dirname, "../../assets/image.png");
+  const imagePath = path.join(__dirname, "../../assets/freya_coin.png");
   const imageBuffer = await readFile(imagePath);
   const imageFile = createGenericFile(imageBuffer, imagePath, {
     contentType: "image/png",
@@ -29,9 +29,10 @@ export async function createFungibleAction(umi: Umi) {
 
   // Subimos la metadata a la red de irys
   const uri = await umi.uploader.uploadJson({
-    name: "Mi primer token fungible",
-    symbol: "FAM",
-    description: "Este es mi primer token fungible de Metaplex",
+    name: "Freya Coin",
+    symbol: "FREY",
+    description:
+      "Freya Coin es una moneda ficticia creada por motivos educativos",
     image,
   });
 
@@ -42,7 +43,9 @@ export async function createFungibleAction(umi: Umi) {
   // Creamos el mint del token fungible en la red de Solana
   const createSignature = await createFungible(umi, {
     mint: mintSigner,
-    name: "Mi fungible",
+    decimals: 6,
+    name: "Freya Coin",
+    symbol: "FREY",
     uri,
     sellerFeeBasisPoints: percentAmount(0),
   }).sendAndConfirm(umi);
@@ -75,7 +78,7 @@ export async function createFungibleAction(umi: Umi) {
   // Minteamos unos tokens a la wallet del receptor
   const mintSignature = await mintV1(umi, {
     mint: mintSigner.publicKey,
-    amount: 1,
+    amount: 1000000000,
     tokenOwner: umi.identity.publicKey,
     tokenStandard: TokenStandard.Fungible,
   }).sendAndConfirm(umi);

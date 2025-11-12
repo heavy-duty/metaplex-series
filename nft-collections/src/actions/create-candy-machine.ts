@@ -19,21 +19,21 @@ import {
 } from "@metaplex-foundation/umi";
 import { base58 } from "@metaplex-foundation/umi/serializers";
 import path from "path";
-import { uploadImageAndMetadata } from "../utils";
+import { uploadImageAndMetadata, weaponsData } from "../utils";
 
 export async function createCandyMachineAction(umi: Umi) {
   // Subimos la imagen y la metadata de la coleccion a la red de irys
   const collectionImagePath = path.join(
     __dirname,
     "../../assets",
-    "collection-image.png",
+    "collection.png",
   );
   const collectionUri = await uploadImageAndMetadata(
     umi,
-    "Mi colección de NFTs",
-    "COLL",
-    "Esta es mi primera colección de NFTs en Solana",
+    "Armas épicas",
+    "Colección de armas épicas",
     collectionImagePath,
+    [],
   );
 
   // Generamos el signer asociado al mint de la coleccion
@@ -45,7 +45,7 @@ export async function createCandyMachineAction(umi: Umi) {
   // Creamos la coleccion en la red de Solana
   const createCollectionSignature = await createNft(umi, {
     mint: collectionMintSigner,
-    name: "Mi colección de NFTs",
+    name: "Armas épicas",
     uri: collectionUri,
     sellerFeeBasisPoints: percentAmount(0),
     isCollection: true,
@@ -73,8 +73,8 @@ export async function createCandyMachineAction(umi: Umi) {
     },
   ];
   const candyMachineConfigLineSettings = some({
-    prefixName: "Mi NFT #$ID+1$",
-    nameLength: 0,
+    prefixName: "",
+    nameLength: 32,
     prefixUri: "https://gateway.irys.xyz/",
     uriLength: 44,
     isSequential: false,
@@ -93,7 +93,7 @@ export async function createCandyMachineAction(umi: Umi) {
     collectionUpdateAuthority: umi.identity,
     tokenStandard: TokenStandard.NonFungible,
     sellerFeeBasisPoints: percentAmount(0),
-    itemsAvailable: 3,
+    itemsAvailable: 5,
     creators: candyMachineCreators,
     configLineSettings: candyMachineConfigLineSettings,
     guards: candyMachineGuards,
@@ -107,31 +107,26 @@ export async function createCandyMachineAction(umi: Umi) {
   );
 
   // Subimos la imagen y metadata de cada elemento de la Candy Machine
-  let itemUris: string[] = [];
+  const candyMachineConfigLines: { name: string; uri: string }[] = [];
 
-  for (let i = 0; i < 3; i++) {
+  for (const weaponData of weaponsData) {
     const imagePath = path.join(
       __dirname,
-      `../../assets/item-${i + 1}-image.png`,
+      `../../assets/${weaponData.imageName}.png`,
     );
     const uri = await uploadImageAndMetadata(
       umi,
-      `Mi NFT #${i + 1}`,
-      "FAM",
-      "Este NFT es parte de mi primera candy machine",
+      weaponData.name,
+      weaponData.description,
       imagePath,
+      weaponData.attributes,
     );
 
-    itemUris.push(uri);
-  }
-
-  // Obtenemos la configuracion de los elementos de la Candy Machine
-  const candyMachineConfigLines = itemUris.map((uri) => {
     const uriSegments = uri.split("/");
     const assetHash = uriSegments[uriSegments.length - 1];
 
-    return { name: "", uri: assetHash };
-  });
+    candyMachineConfigLines.push({ name: weaponData.name, uri: assetHash });
+  }
 
   // Agregamos los elementos a la Candy Machine
   const addConfigLinesSignature = await addConfigLines(umi, {
@@ -148,7 +143,7 @@ export async function createCandyMachineAction(umi: Umi) {
   // Minteamos todos los elementos de la Candy Machine
   let mintSigners: Signer[] = [];
 
-  for (let i = 0; i < 3; i++) {
+  for (let i = 0; i < 5; i++) {
     // Generamos el signer asociado al mint del NFT
     const mintSigner = generateSigner(umi);
     console.log(`   > NFT #${i + 1} Address: ${mintSigner.publicKey}`);
