@@ -78,7 +78,6 @@ export async function pledgeCampaignCommand(
   // Subimos la metadata del pledge
   const pledgeUri = await umi.uploader.uploadJson({
     name: `Pledge #${campaign.totalPledges}`,
-    symbol: "PLEDGE",
     description: `This NFT represents a pledge to the campaign with address: ${campaign.address}`,
     image: pledgeImage,
   });

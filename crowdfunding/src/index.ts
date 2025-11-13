@@ -43,7 +43,6 @@ program
   .description("Mints Campaign NFT")
   .requiredOption("--goal <lamports>", "Funding goal in lamports")
   .requiredOption("--name <string>", "Campaign name")
-  .requiredOption("--symbol <string>", "Campaign symbol")
   .requiredOption("--description <string>", "Campaign description")
   .requiredOption("--creatorKeypair <path>", "Creator's keypair file path")
   .action(createCommand(createCampaignCommand));

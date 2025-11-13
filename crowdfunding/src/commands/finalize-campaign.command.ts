@@ -62,7 +62,6 @@ export async function finalizeCampaignCommand(
   // Subimos la metadata de la coleccion de rewards
   const rewardCollectionUri = await umi.uploader.uploadJson({
     name: "Rewards Collection",
-    symbol: "REWARD",
     description: "A collection of rewards for a campaign",
     image: rewardCollectionImage,
   });

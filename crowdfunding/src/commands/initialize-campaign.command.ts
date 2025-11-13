@@ -58,7 +58,6 @@ export async function initializeCampaignCommand(
   // Subimos la metadata de la coleccion de pledges
   const pledgesCollectionUri = await umi.uploader.uploadJson({
     name: "Pledges Collection",
-    symbol: "PLEDGE",
     description: "A collection of pledges for a campaign",
     image: pledgesCollectionImage,
   });

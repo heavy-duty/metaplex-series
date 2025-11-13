@@ -8,7 +8,6 @@ export interface CreateCampaignCommandOptions {
   goal: string;
   name: string;
   description: string;
-  symbol: string;
   creatorKeypair: string;
   rpcUrl: string;
   serverKeypair: string;
@@ -33,7 +32,6 @@ export async function createCampaignCommand(
   // Subimos la metadata de la campaña
   const campaignUri = await umi.uploader.uploadJson({
     name: options.name,
-    symbol: options.symbol,
     description: options.description,
     image: campaignImage,
     attributes: [
