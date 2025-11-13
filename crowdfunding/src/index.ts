@@ -4,6 +4,7 @@ import * as dotenv from "dotenv";
 dotenv.config();
 
 import { Command } from "commander";
+import path from "path";
 import {
   campaignCommand,
   campaignPledgesCommand,
@@ -33,7 +34,7 @@ program
   .option(
     "--serverKeypair <path>",
     "Server keypair path",
-    process.env.SERVER_KEYPAIR_PATH || "./server-keypair.json",
+    path.join(__dirname, "../../keypair.json"),
   )
   .option("--logLevel <level>", "Log level (error|warn|info|debug)", "info");
 
@@ -43,7 +44,6 @@ program
   .description("Mints Campaign NFT")
   .requiredOption("--goal <lamports>", "Funding goal in lamports")
   .requiredOption("--name <string>", "Campaign name")
-  .requiredOption("--symbol <string>", "Campaign symbol")
   .requiredOption("--description <string>", "Campaign description")
   .requiredOption("--creatorKeypair <path>", "Creator's keypair file path")
   .action(createCommand(createCampaignCommand));

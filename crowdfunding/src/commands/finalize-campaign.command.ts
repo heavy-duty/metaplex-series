@@ -7,7 +7,7 @@ export interface FinalizeCampaignCommandOptions {
 }
 
 export async function finalizeCampaignCommand(
-  options: FinalizeCampaignCommandOptions,
+  _options: FinalizeCampaignCommandOptions,
 ) {
   // Inicializamos umi
   // Leemos el keypair del creador

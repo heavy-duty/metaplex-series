@@ -5,7 +5,7 @@ export interface CampaignCommandOptions {
   logLevel: string;
 }
 
-export async function campaignCommand(options: CampaignCommandOptions) {
+export async function campaignCommand(_options: CampaignCommandOptions) {
   // Obtenemos el NFT de la campaña con su metadata
   // Transformamos el NFT en un objeto de tipo campaña
   // Imprimimos la campaña y sus detalles

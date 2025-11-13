@@ -7,7 +7,7 @@ export interface WithdrawCampaignCommandOptions {
 }
 
 export async function withdrawCampaignCommand(
-  options: WithdrawCampaignCommandOptions,
+  _options: WithdrawCampaignCommandOptions,
 ) {
   // Inicializamos Umi
   // Leemos el keypair del creador

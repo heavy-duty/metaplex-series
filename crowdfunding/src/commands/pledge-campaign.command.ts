@@ -7,7 +7,7 @@ export interface PledgeCampaignCommandOptions {
 }
 
 export async function pledgeCampaignCommand(
-  options: PledgeCampaignCommandOptions,
+  _options: PledgeCampaignCommandOptions,
 ) {
   // Inicializamos Umi
   // Leemos el keypair del backer

@@ -8,7 +8,7 @@ export interface RefundCampaignCommandOptions {
 }
 
 export async function refundCampaignCommand(
-  options: RefundCampaignCommandOptions,
+  _options: RefundCampaignCommandOptions,
 ) {
   // Inicializamos Umi
   // Leemos el keypair del backer

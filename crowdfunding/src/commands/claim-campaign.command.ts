@@ -8,7 +8,7 @@ export interface ClaimCampaignCommandOptions {
 }
 
 export async function claimCampaignCommand(
-  options: ClaimCampaignCommandOptions,
+  _options: ClaimCampaignCommandOptions,
 ) {
   // Inicializamos umi
   // Leemos el keypair del backer

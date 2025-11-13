@@ -7,7 +7,7 @@ export interface CampaignPledgesCommandOptions {
 }
 
 export async function campaignPledgesCommand(
-  options: CampaignPledgesCommandOptions,
+  _options: CampaignPledgesCommandOptions,
 ) {
   // Inicializamos Umi
   // Obtenemos el NFT de la campaña con su metadata
