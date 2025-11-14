@@ -74,7 +74,7 @@ export async function withdrawCampaignCommand(
   );
 
   // Validamos que la meta se cumplio
-  if (transferAmount <= lamports(campaign.goal)) {
+  if (transferAmount < lamports(campaign.goal)) {
     throw new Error("There are not enough funds to withdraw from campaign.");
   }
 

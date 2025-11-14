@@ -27,7 +27,6 @@ export type Campaign = BaseCampaign &
     | {
         status: "work in progress";
         pledgesCollectionAddress: string;
-        rewardsCollectionAddress: string;
       }
     | {
         status: "finalized";
@@ -141,10 +140,6 @@ export function toCampaign(assetWithMetadata: AssetWithMetadata): Campaign {
       throw new Error("Campaign is missing the pledges collection address");
     }
 
-    if (!campaignRewardsCollectionAddress) {
-      throw new Error("Campaign is missing the rewards collection address");
-    }
-
     return {
       address: assetWithMetadata.publicKey,
       name: assetWithMetadata.name,
@@ -156,7 +151,6 @@ export function toCampaign(assetWithMetadata: AssetWithMetadata): Campaign {
       refundedPledges: parseInt(campaignRefundedPledges, 10),
       status: "work in progress",
       pledgesCollectionAddress: campaignPledgesCollectionAddress,
-      rewardsCollectionAddress: campaignRewardsCollectionAddress,
     };
   } else if (campaignStatus === "finalized") {
     if (!campaignPledgesCollectionAddress) {
