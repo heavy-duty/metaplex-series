@@ -14,6 +14,8 @@ async function main() {
   // Generate a new keypair and airdrop some SOL to it
   const keypair = Keypair.generate();
 
+  console.log(`Public Key: ${keypair.publicKey.toBase58()}`);
+
   try {
     console.log("Attempt to request airdrop");
     await connection.requestAirdrop(keypair.publicKey, LAMPORTS_PER_SOL);
@@ -25,7 +27,7 @@ async function main() {
   const keypairFilePath = path.join(
     __dirname,
     "../../..",
-    `${process.argv[2] || "keypair"}.json`
+    `${process.argv[2] || "keypair"}.json`,
   );
   await writeFile(keypairFilePath, keypair.secretKey);
 }
